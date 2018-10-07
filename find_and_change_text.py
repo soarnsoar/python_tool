@@ -36,10 +36,7 @@ f = open(oldfile, 'r')
 f_new = open(newfile,'w')
 lines=f.readlines()
 for line in lines:
-    print line
-#    if 'aaa' in line:
     line=line.replace(old,new)
-    print line
     f_new.write(line)
 
 
