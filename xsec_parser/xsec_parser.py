@@ -583,47 +583,5 @@ if __name__ == "__main__":
     ana.set_flist('outputs') ##input = directory ##default dir = pwd  
     ana.combine_info()
     ana.set_total_combine()
-    ana.import_result('outputs.txt')###input = where to save the output file
-'''
-    Nprocess  = len(ana.process_combine)
-    for i in range(Nprocess):
-        proc = ana.process_combine[i]
-        print "############################"
-        print proc.Process
-        print proc.xsec_before
-        print proc.xsec_before_err
-        print proc.passed
-        print proc.f_nposw
-        print proc.f_nnegw
-        print proc.tried
-        print proc.i_nposw
-        print proc.i_nnegw
-        print proc.xsec_match
-        print proc.xsec_match_err
-        print proc.accepted
-        print proc.accepted_err
-        print proc.event_eff
-        print proc.event_eff_err
+    ana.import_result('xsec_outputs.txt')###input = where to save the output file
 
-        
-    total_info=ana.total_info(ana.process_combine)
-    print "######################"
-    print total_info.Process
-    print total_info.xsec_before
-    print total_info.xsec_before_err
-    print total_info.passed
-    print total_info.f_nposw
-    print total_info.f_nnegw
-    print total_info.tried
-    print total_info.i_nposw
-    print total_info.i_nnegw
-    print total_info.xsec_match
-    print total_info.xsec_match_err
-    print total_info.accepted
-    print total_info.accepted_err
-    print total_info.event_eff
-    print total_info.event_eff_err
-
-    
-    
-'''
