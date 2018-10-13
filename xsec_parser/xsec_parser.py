@@ -580,7 +580,7 @@ def test():
 if __name__ == "__main__":
 #    test()
     ana = output_parser()
-    ana.set_flist('outputs') ##input = directory ##default dir = pwd  
+    ana.set_flist('/afs/cern.ch/work/j/jhchoi/public/log_lv_bwcutoff_WJetsToLNu_HT-incl_VMG5_26x_false_pdfwgt') ##input = directory ##default dir = pwd  
     ana.combine_info()
     ana.set_total_combine()
     ana.import_result('xsec_outputs.txt')###input = where to save the output file
