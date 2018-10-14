@@ -186,6 +186,7 @@ class output_parser:
         txseclines = [] 
         mode=0 # if mode==1, It is a xsec-related value
         mode_t=0 # For  PYTHIA Process Initialization
+        isvalid=1
         for line in lines:
 
         ######GenXsecAnalyzer BOX#####
@@ -200,18 +201,19 @@ class output_parser:
         ######PYTHIA Process Initialization#######
             if (self.total_xsec_start_phrase in line):                
                 mode_t=1
-            elif(self.total_xsec_end_phrase in line): mode_t=0
+            elif((self.total_xsec_end_phrase in line) and (mode_t==0)): mode_t=0
 
             if(mode_t==1):
 
                 txseclines.append(line)
         ######END PYTHIA Process Initialization#######
 
-
+            if "Cross-section summary not available" in line : isvalid=0
 
 
         f.close()
-        if xseclines == None: return "NOT a valid file"
+
+        if isvalid==0 : return "NOT a valid file"
         else : 
 
             self.xsec_info=xseclines
@@ -580,7 +582,8 @@ def test():
 if __name__ == "__main__":
 #    test()
     ana = output_parser()
-    ana.set_flist('/afs/cern.ch/work/j/jhchoi/public/log_lv_bwcutoff_WJetsToLNu_HT-incl_VMG5_26x_false_pdfwgt') ##input = directory ##default dir = pwd  
+ #   ana.set_flist('/afs/cern.ch/work/j/jhchoi/public/log_lv_bwcutoff_WJetsToLNu_HT-incl_VMG5_26x_false_pdfwgt') ##input = directory ##default dir = pwd  
+    ana.set_flist('lv_bwcutoff_WJetsToLNu_HT-incl_VMG5_26x_false_pdfwgt')
     ana.combine_info()
     ana.set_total_combine()
     ana.import_result('xsec_outputs.txt')###input = where to save the output file
