@@ -212,7 +212,7 @@ class output_parser:
 
 
         f.close()
-        if len(xseclines)==0 : return "NOT a valid file"
+        if len(xseclines)==0 : isvalid=0
         if isvalid==0 : return "NOT a valid file"
         else : 
 
