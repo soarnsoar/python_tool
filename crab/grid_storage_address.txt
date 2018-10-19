@@ -1,2 +1,3 @@
 #knu
 root://cluster142.knu.ac.kr//store/
+root://cluster142.knu.ac.kr//store/mc/
