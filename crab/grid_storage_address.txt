@@ -1,3 +1,5 @@
 #knu
 root://cluster142.knu.ac.kr//store/
 root://cluster142.knu.ac.kr//store/mc/
+#kisti
+root://cms-xrdr.sdfarm.kr:1094///xrd/store/
