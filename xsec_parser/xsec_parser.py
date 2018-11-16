@@ -18,7 +18,7 @@ class output_parser:
     xsec_info=[]
     xsec_start_phrase = "GenXsecAnalyzer"
     xsec_end_phrase = "============================================="
-    xsec_start_phrase_i = "Process"
+    xsec_start_phrase_i = "Process\t\txsec_before"
     xsec_end_phrase_i = "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- "
 
     txsec_info=[]
@@ -41,7 +41,7 @@ class output_parser:
         self.xsec_info=[]
         self.xsec_start_phrase = "GenXsecAnalyzer"
         self.xsec_end_phrase = "============================================="
-        self.xsec_start_phrase_i = "Process"
+        self.xsec_start_phrase_i = "Process\t\txsec_before"
         self.xsec_end_phrase_i = "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- "
         self.txsec_info=[]
         self.total_xsec_no_merge=0
@@ -170,7 +170,7 @@ class output_parser:
                 #event_eff # num.of events(after matching) / num.of events(after matching)
                     npassed=float(self.f_nposw) + float(self.f_nnegw)
                     ntried=float(self.i_nposw) + float(self.i_nnegw)
-                    self.event_eff= npassed/wtried * 100. #in percent
+                    self.event_eff= npassed/ntried * 100. #in percent
                 #event_eff_err # binomial error
                     self.event_eff_err= math.sqrt( (1-self.event_eff/100.)*self.event_eff/100./ntried ) *100.
                 #xsec_match
