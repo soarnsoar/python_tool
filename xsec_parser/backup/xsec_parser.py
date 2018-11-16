@@ -1,8 +1,7 @@
 #!/usr/bin/python
 
 ###To analyze  "GenXsecAnalyzer" output
-###Author : Junho Choi[Seoul National University, S.Korea] [jhchoi@cern.ch] ###
-###Any comments OR corrections are welcomed.###
+
 
 import glob
 import os
@@ -33,39 +32,26 @@ class output_parser:
     process_combine=[] ### combined info using all files in the target directory # size = N processes
 
     
-    def __init__(self):    
-        self.fs_output = []
-        self.f_current=''
-        self.N_fvalid=0
-        self.xsec_info=[]
-        self.xsec_start_phrase = "GenXsecAnalyzer"
-        self.xsec_end_phrase = "============================================="
-        self.xsec_start_phrase_i = "Process"
-        self.xsec_end_phrase_i = "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- "
-        self.txsec_info=[]
-        self.total_xsec_no_merge=0
-        self.N_event_no_merge=0
-        self.total_xsec_start_phrase = "PYTHIA Process Initialization"
-        self.total_xsec_end_phrase = "End PYTHIA Multiparton Interactions Initialization"
-        
     
-    class i_process: ####This class is for a process (ith process)
+    
+    
+    class i_process: ####This class is for a process 
  
         def __init__(self,i):
             self.Process=str(i)
-            self.xsec_before=0 ##Before merging
+            self.xsec_before=0
             self.xsec_before_err=0
             self.passed=0
-            self.f_nposw=0 ##after merging #the number of events with positive weights
-            self.f_nnegw=0 ##after merging #the number of events with negative weights
-            self.tried=0 ### of total events before merging
-            self.i_nposw=0 ##before merging # the number of events with positive weights 
-            self.i_nnegw=0 ##before merging # the number of events with negative weights
-            self.xsec_match=0 #Xsec after merging(matching)
-            self.xsec_match_err=0 # error of xsec after merging
-            self.accepted=0 # accetance = sum of event weights(after merging) / sum of event weights(before merging)
-            self.accepted_err=0 # error of the value above
-            self.event_eff=0 # efficiency = # of events (after merging)/ # of events (before merging)
+            self.f_nposw=0 ##after merging
+            self.f_nnegw=0
+            self.tried=0
+            self.i_nposw=0 ##before merging
+            self.i_nnegw=0
+            self.xsec_match=0
+            self.xsec_match_err=0
+            self.accepted=0
+            self.accepted_err=0    
+            self.event_eff=0
             self.event_eff_err=0
        
         def add_info(self,proc):##Use when combine xsec values from various files
@@ -90,7 +76,6 @@ class output_parser:
             
             if self.Process != Process2: 
                 print "Process # is not matched"
-                return -1
             else:
                 Process1=self.Process
                 passed1=self.passed
@@ -108,7 +93,7 @@ class output_parser:
                 event_eff1=self.event_eff
                 event_eff_err1=self.event_eff_err
 
-                #### #of events=>very simple!!! Values can be added directly###
+                ####Simple #of events values can be added directly###
                 self.passed+=passed2
                 self.i_nposw+=i_nposw2
                 self.i_nnegw+=i_nnegw2
@@ -117,7 +102,7 @@ class output_parser:
                 self.f_nnegw+=f_nnegw2
 
                 ########################                
-                ##sequence of calculation : xsec_before => xsec_before_err => calculate acceptance =>  calculate acceptance_err => calc event_eff=>calc event_eff_err
+                ##order => xsec_before => xsec_before_err => calculate acceptance =>  calculate acceptance_err => calc event_eff=>calc event_eff_err
                 #=>xsec_match => xsec_match_err
 
                 ###xsec_before###
@@ -136,41 +121,27 @@ class output_parser:
                     self.xsec_before_err=xsec_before_err1
 
                 else :
-                    #combine two mean values -> [sum1 + sum2]/[N1+N2] -> [value1*N1+value2*N2]/[N1+N2]
-                    #sample1's standard deviation = sample2's standard deviation = standard deviation of all
-                    #value1 = mean value => value1's error = standard deviation/sqrt(N1)
-                    #value2 = mean value => value2's error = standard deviation/sqrt(N2)
-                    #Therefore, error1*sqrt(N1) = error2*sqrt(N2) = Constant
-                    #=> N1 = C^2/error1^2 , N2 = C^2/error2^2
-                    #=> w1 = 1/error1^2 , w2 = 1/error2^2
-
-                    
-                    w1=pow(1/xsec_before_err1,2) 
+                    w1=pow(1/xsec_before_err1,2)
                     w2=pow(1/xsec_before_err2,2)
                     numo=xsec_before1*w1 + xsec_before2*w2
                     deno=w1+w2
-
-                    ##combine = (w1*value1 + w2*value2)/(w1+w2)
-                    
+                
                     self.xsec_before=numo/deno
                     numo=1
                     deno=w1+w2
                     self.xsec_before_err=math.sqrt(numo/deno)
                     
-                #accepted # acceptance =  weightsum(after matching) / weightsum(before matching)
+                #accepted
                     wpassed=float(self.f_nposw) - float(self.f_nnegw)
                     wtried=float(self.i_nposw) - float(self.i_nnegw)
                     self.accepted= wpassed/wtried * 100. #in percent
                 #accepted_err
-                ## binomial error
-                ##=> err=sqrt[Np(1-p)] => ratio error = err/N = sqrt[ (1-p)*p/N ] (in %)==>sqrt[ (1-p)*p/N ]*100
-                    self.accepted_err=math.sqrt( (1-self.accepted/100.)*(self.accepted/100.)/wtried )*100.
-
-                #event_eff # num.of events(after matching) / num.of events(after matching)
+                    self.accepted_err=math.sqrt( (1-self.accepted/100.)*self.accepted/100./wtried )*100.
+                #event_eff
                     npassed=float(self.f_nposw) + float(self.f_nnegw)
                     ntried=float(self.i_nposw) + float(self.i_nnegw)
                     self.event_eff= npassed/wtried * 100. #in percent
-                #event_eff_err # binomial error
+                #event_eff_err
                     self.event_eff_err= math.sqrt( (1-self.event_eff/100.)*self.event_eff/100./ntried ) *100.
                 #xsec_match
                     if self.xsec_before == 0 or self.accepted == 0 :
@@ -178,26 +149,25 @@ class output_parser:
                         self.xsec_match_err=0
                     else:
                         self.xsec_match = self.xsec_before*self.accepted/100.
-                #xsec_match_err => sqrt sum of relative err's  (Link: https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Example_formulas)
-                ###Uncertainty from mutiplying values with errors
+                #xsec_match_err => sqrt sum of relative err's
                         self.xsec_match_err = self.xsec_match * math.sqrt( pow(self.xsec_before_err/self.xsec_before  ,2 ) + pow(self.accepted_err/self.accepted,2)   )
 
 
 
         
-    total_combine=i_process("total") ##declare Total result
+    total_combine=i_process("total")
     
 
     
 
 
-    def set_flist(self, _dir_=str(os.getcwd()) ):##if no argument, use current directory    
+    def set_flist(self, _dir_=str(os.getcwd()) ):    
         
         for file in glob.glob(_dir_+"/*.out"):
             self.fs_output.append(file)
 
         
-    def set_file(self,idx):##which file I will use in my list(self.fs_output object)
+    def set_file(self,idx):
         self.f_current=self.fs_output[idx]
 
     def clear_flist(self):
@@ -214,31 +184,30 @@ class output_parser:
         lines=f.readlines()
         xseclines = [] 
         txseclines = [] 
-        mode=0 # if mode==1, It is a xsec-related value (the line is in GenXsecAnalyzer box)
-        mode_t=0 # For  PYTHIA Process Initialization ##To read total cross section
+        mode=0 # if mode==1, It is a xsec-related value
+        mode_t=0 # For  PYTHIA Process Initialization
         isvalid=1
         for line in lines:
 
         ######GenXsecAnalyzer BOX#####
             if (self.xsec_start_phrase in line): 
                 mode=1
+
             elif(self.xsec_end_phrase in line): mode=0
   
             if(mode==1):   xseclines.append(line)
         ######END GenXsecAnalyzer BOX#####
 
-        ######PYTHIA Process Initialization####### -> total xsec info
+        ######PYTHIA Process Initialization#######
             if (self.total_xsec_start_phrase in line):                
                 mode_t=1
-            elif((self.total_xsec_end_phrase in line) and (mode_t==1)): mode_t=0 ##End of "PYTHIA Process Initialization"Box
+            elif((self.total_xsec_end_phrase in line) and (mode_t==0)): mode_t=0
 
             if(mode_t==1):
 
                 txseclines.append(line)
         ######END PYTHIA Process Initialization#######
 
-
-        ######Error message#####
             if "Cross-section summary not available" in line : isvalid=0
 
 
@@ -266,7 +235,7 @@ class output_parser:
     def get_xsec_info_i(self):
         del self.process[:]
 
-        mode=0 ##current line is xsec info OR not
+        mode=0
         self.N_process=0
         for line in self.xsec_info: ##for each line in xsec box
 
@@ -396,7 +365,7 @@ class output_parser:
 
     def combine_info(self):
         self.N_fvalid=0
-        self.clear_process_combine() ## clear info. in case of remaining things
+        self.clear_process_combine()
 
 
 
@@ -405,63 +374,86 @@ class output_parser:
 
         for i in range(len(self.fs_output)) :
 
-            self.set_file(i) # ith file
+            self.set_file(i)
             self.get_xsec_info()
-            if self.get_xsec_info()=="NOT a valid file": continue ##Pass not valid file
+            if self.get_xsec_info()=="NOT a valid file": continue
             ######VALID FILE######
             self.N_fvalid=self.N_fvalid+1
-            ######1st valid file########->initialize combined info
+            ######1st file########->initialize combined info
 
             if self.N_fvalid==1 :
-                for ip in range(self.N_process): # ip th subprocess
-                    proc_temp=self.i_process(str(ip)) ## define empty process with index ip
-                    self.process_combine.append(proc_temp) # add empty process N_process times
+                for ip in range(self.N_process):
+                    proc_temp=self.i_process(str(ip))
+                    self.process_combine.append(proc_temp)
             #######################
 
-            print str(i)+". "+self.f_current            ##print file list
+            print str(i)+". "+self.f_current            
 
 
             ###for one file, all processes
             for proc in self.process:
 
-                Process=proc.Process  ## idx of process              
+
+                Process=proc.Process
+#                passed=proc.passed
+#                i_nposw=proc.i_nposw
+#                i_nnegw=proc.i_nnegw
+#                tried=proc.tried
+#                f_nposw=proc.f_nposw
+#                f_nnegw=proc.f_nnegw
+#                xsec_before=proc.xsec_before
+#                xsec_before_err=proc.xsec_before_err
+#                xsec_match=proc.xsec_match
+#                xsec_match_err=proc.xsec_match_err
+#                accepted=proc.accepted
+#                accepted_err=proc.accepted_err
+#                event_eff=proc.event_eff
+#                event_eff_err=proc.event_eff_err
+                 ###Add event info####
+#                self.process_combine[Process].passed+=passed
+#                self.process_combine[Process].i_nposw+=i_nposw
+#                self.process_combine[Process].i_nnegw+=i_nnegw
+#                self.process_combine[Process].tried+=tried
+#                self.process_combine[Process].f_nposw+=f_nposw
+#                self.process_combine[Process].f_nnegw+=f_nnegw
+                
                 self.process_combine[int(Process)].add_info(proc)
                 
         print "# of valid file="+str(self.N_fvalid)
 
 
     def total_info(self,processes):
-        total=self.i_process("total")## declare total process 
-        Nprocess=len(processes)## Nprocess = # of subprocesses
+        total=self.i_process("total")## sum of all processes
+        Nprocess=len(processes)
         for i in range(Nprocess):
             proc=processes[i]
-            total.xsec_before+=proc.xsec_before ## total xsec = sum of xsec from subprocesses 
-            total.xsec_before_err=math.sqrt( pow( total.xsec_before_err,2   ) + pow(proc.xsec_before_err,2)     )##Error sum of independent values
-            total.passed+=proc.passed #simple addition : # of events
+            total.xsec_before+=proc.xsec_before
+            total.xsec_before_err=math.sqrt( pow( total.xsec_before_err,2   ) + pow(proc.xsec_before_err,2)     )
+            total.passed+=proc.passed
             total.i_nposw+=proc.i_nposw
             total.i_nnegw+=proc.i_nnegw
             total.tried+=proc.tried
             total.f_nposw+=proc.f_nposw
             total.f_nnegw+=proc.f_nnegw
-            total.xsec_match+=proc.xsec_match 
+            total.xsec_match+=proc.xsec_match
             total.xsec_match_err=math.sqrt( pow( total.xsec_match_err,2   ) + pow(proc.xsec_match_err,2)     )
             
 
 
 
-        total.accepted=(    (float(total.f_nposw)-float(total.f_nnegw))/(float(total.i_nposw)-float(total.i_nnegw)) )*100. ## after matching / before matching
-        total.accepted_err=    math.sqrt( ( 1 - total.accepted /100.   )*total.accepted /100. / float(total.i_nposw-total.i_nnegw) )*100. ## binomial error
-        total.event_eff=(   (float(total.f_nposw)+float(total.f_nnegw))/(float(total.i_nposw)+float(total.i_nnegw)) )*100. ## after matching / before matching
-        total.event_eff_err=  math.sqrt( ( 1 - total.event_eff/100.   )*total.event_eff/100. / float(total.i_nposw+total.i_nnegw) )*100. ## binomial error
+        total.accepted=(    (float(total.f_nposw)-float(total.f_nnegw))/(float(total.i_nposw)-float(total.i_nnegw)) )*100.
+        total.accepted_err=    math.sqrt( ( 1 - total.accepted /100.   )*total.accepted /100. / float(total.i_nposw-total.i_nnegw) )*100.
+        total.event_eff=(   (float(total.f_nposw)+float(total.f_nnegw))/(float(total.i_nposw)+float(total.i_nnegw)) )*100.
+        total.event_eff_err=  math.sqrt( ( 1 - total.event_eff/100.   )*total.event_eff/100. / float(total.i_nposw+total.i_nnegw) )*100.
        
         return total
         
 
 
     def set_total_combine(self):
-        self.total_combine=self.total_info(self.process_combine) ##just run the total_info
+        self.total_combine=self.total_info(self.process_combine)
         
-    def import_result(self, filename=os.getcwd()+"combine_output.txt"): ##store the result in GenXsecAnalyzer box 
+    def import_result(self, filename=os.getcwd()+"combine_output.txt"):
         f= open(filename,'w')
         f.write(           
             '''
@@ -519,11 +511,79 @@ Overall cross-section summary
 
         f.close()
 
+
+def test():
+
+##test_with 1st file
+    ana = output_parser()
+    ana.set_flist() ##input = directory ##default dir = pwd
+    ana.combine_info()
+    ana.set_file(0)
+    ana.get_xsec_info()
+    
+#    print ana.process[0]
+    Nprocess  = len(ana.process)
+    proc=ana.process
+    xsec_before_sum=0
+    xsec_before_err_sqrsum=0
+    xsec_before_err_relsum=0
+    xsec_before_relerr_sum=0
+    xsec_match_sum=0    
+    
+    for i in range(Nprocess):
+        accepted_cal_i=0
+        accepted_err_cal_i=0
+        event_eff_cal_i=0
+        event_eff_err_cal_i=0
+        i_nposw=float(proc[i].i_nposw)
+        i_nnegw=float(proc[i].i_nnegw)
+        f_nposw=float(proc[i].f_nposw)
+        f_nnegw=float(proc[i].f_nnegw)
+
+        event_eff_cal_i = (f_nposw+f_nnegw)/(i_nposw+i_nnegw)
+        event_eff_err_cal_i= math.sqrt((1-event_eff_cal_i)*event_eff_cal_i/(i_nposw+i_nnegw)    ) 
+
+        accepted_cal_i=(f_nposw-f_nnegw)/(i_nposw-i_nnegw)
+        accepted_err_cal_i= math.sqrt((1-accepted_cal_i)*accepted_cal_i/(i_nposw+i_nnegw)    )
+
+
+
+        #######XSEC###########
+        xsec_before_err_i=proc[i].xsec_before_err
+        xsec_before_err_sqrsum=math.sqrt( pow(xsec_before_err_sqrsum, 2   ) + pow(xsec_before_err_i, 2))
+        xsec_before_i=proc[i].xsec_before
+
+        relerr_i = xsec_before_err_i/xsec_before_i
+        xsec_before_relerr_sum=math.sqrt( pow(relerr_i,2) + pow(xsec_before_relerr_sum,2) )
+        
+        
+        xsec_before_sum=xsec_before_sum+xsec_before_i
+ 
+        ########################
+
+    #### xsec_match ####
+        xsec_match_cal_i=xsec_before_i*accepted_cal_i
+        print "xsec_match_cal_i="+str(xsec_match_cal_i)
+        if xsec_before_i==0 or accepted_err_cal_i==0:
+            xsec_match_relerr_cal_i=0
+        else:            
+            xsec_match_relerr_cal_i=math.sqrt( pow( xsec_before_err_i/xsec_before_i  ,2) + pow( accepted_err_cal_i/accepted_cal_i,2  )   )
+        
+        xsec_match_err_cal_i=xsec_match_relerr_cal_i*xsec_match_cal_i
+        print "xsec_match_err_cal_i="+str(xsec_match_err_cal_i)
+        print "############################"
+
+
+    print "xsec_before_err_sqrsum="+str(xsec_before_err_sqrsum)
+    xsec_before_err_relsum= xsec_before_sum*xsec_before_relerr_sum
+    print "xsec_before_sum="+str(xsec_before_sum)
+
+
 if __name__ == "__main__":
 #    test()
     ana = output_parser()
     ana.set_flist('/afs/cern.ch/work/j/jhchoi/public/log_lv_bwcutoff_WJetsToLNu_HT-incl_VMG5_26x_false_pdfwgt') ##input = directory ##default dir = pwd  
-    #    ana.set_flist('lv_bwcutoff_WJetsToLNu_HT-incl_VMG5_26x_false_pdfwgt')
+#    ana.set_flist('lv_bwcutoff_WJetsToLNu_HT-incl_VMG5_26x_false_pdfwgt')
     ana.combine_info()
     ana.set_total_combine()
     ana.import_result('xsec_outputs.txt')###input = where to save the output file
