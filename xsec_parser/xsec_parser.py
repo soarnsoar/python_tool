@@ -33,6 +33,7 @@ class output_parser:
 
     process_combine=[] ### combined info using all files in the target directory # size = N processes
 
+    output_format='.out'
     
     def __init__(self):    
         self.fs_output = []
@@ -48,7 +49,7 @@ class output_parser:
         self.N_event_no_merge=0
         self.total_xsec_start_phrase = "PYTHIA Process Initialization"
         self.total_xsec_end_phrase = "End PYTHIA Multiparton Interactions Initialization"
-        
+        self.output_format='.out'
     
     class i_process: ####This class is for a process (ith process)
  
@@ -194,13 +195,16 @@ class output_parser:
 
     def set_flist(self, _dir_=str(os.getcwd()) ):##if no argument, use current directory    
         
-        for file in glob.glob(_dir_+"/*.out"):
+        for file in glob.glob(_dir_+"/*"+self.output_format):
             self.fs_output.append(file)
 
         
     def set_file(self,idx):##which file I will use in my list(self.fs_output object)
         self.f_current=self.fs_output[idx]
 
+    def set_output_format(self,form):
+        self.output_format=form
+        
     def clear_flist(self):
         del self.fs_output[:]
     
@@ -523,7 +527,9 @@ Overall cross-section summary
 if __name__ == "__main__":
 #    test()
     ana = output_parser()
-    ana.set_flist('/afs/cern.ch/work/j/jhchoi/public/log_lv_bwcutoff_WJetsToLNu_HT-incl_VMG5_26x_false_pdfwgt') ##input = directory ##default dir = pwd  
+    #    ana.set_output_format('.out')
+    ana.set_flist()
+    #    ana.set_flist('/afs/cern.ch/work/j/jhchoi/public/log_lv_bwcutoff_WJetsToLNu_HT-incl_VMG5_26x_false_pdfwgt') ##input = directory ##default dir = pwd  
     #    ana.set_flist('lv_bwcutoff_WJetsToLNu_HT-incl_VMG5_26x_false_pdfwgt')
     ana.combine_info()
     ana.set_total_combine()
