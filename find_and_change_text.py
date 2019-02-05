@@ -12,22 +12,22 @@ if args.old:
     old = args.old
 else:
     print "need --old argument"
-    exit
+    quit()
 if args.new:
     new = args.new
 else:
     print "need --new argument"
-    exit
+    quit()
 if args.oldfile:
     oldfile= args.oldfile
 else:
     print "need --oldfile argument"
-    exit
+    quit()
 if args.newfile:
     newfile= args.newfile
 else:
     print "need --newfile argument"
-    exit
+    quit()
 
 ######################
 
