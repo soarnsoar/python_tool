@@ -43,7 +43,7 @@ class output_parser:
         self.xsec_start_phrase = "GenXsecAnalyzer"
         self.xsec_end_phrase = "============================================="
         self.xsec_start_phrase_i = "Process\t\txsec_before"
-        self.xsec_end_phrase_i = "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- "
+        self.xsec_end_phrase_i = "-----------------------------------------------------------------------------"
         self.txsec_info=[]
         self.total_xsec_no_merge=0
         self.N_event_no_merge=0
@@ -131,12 +131,25 @@ class output_parser:
                 if xsec_before1 == 0 and xsec_before2 != 0:
                     self.xsec_before=xsec_before2
                     self.xsec_before_err=xsec_before_err2
+                    self.xsec_match=xsec_match2
+                    self.xsec_match_err=xsec_match_err2
+                    self.accepted=accepted2
+                    self.accepted_err=accepted_err2
+                    self.event_eff=event_eff2
+                    self.event_eff_err=event_eff_err2
 
                 elif xsec_before1 !=0 and xsec_before2==0:
 
                     self.xsec_before=xsec_before1
                     self.xsec_before_err=xsec_before_err1
+                    self.xsec_match=xsec_match1
+                    self.xsec_match_err=xsec_match_err1
+                    self.accepted=accepted1
+                    self.accepted_err=accepted_err1
+                    self.event_eff=event_eff1
+                    self.event_eff_err=event_eff_err1
 
+                    
                 else :
                     #combine two mean values -> [sum1 + sum2]/[N1+N2] -> [value1*N1+value2*N2]/[N1+N2]
                     #sample1's standard deviation = sample2's standard deviation = standard deviation of all
@@ -335,6 +348,7 @@ class output_parser:
 ##########################Use split method in python#####################################
 
                 info=line.split()
+               # print "info="+str(info)
 #                current_proc=self.i_process(float(info[0]))
                 current_proc=self.i_process(str(info[0]))
  
@@ -526,12 +540,40 @@ Overall cross-section summary
 
 if __name__ == "__main__":
 #    test()
-    ana = output_parser()
-    #    ana.set_output_format('.out')
-    ana.set_flist()
-    #    ana.set_flist('/afs/cern.ch/work/j/jhchoi/public/log_lv_bwcutoff_WJetsToLNu_HT-incl_VMG5_26x_false_pdfwgt') ##input = directory ##default dir = pwd  
-    #    ana.set_flist('lv_bwcutoff_WJetsToLNu_HT-incl_VMG5_26x_false_pdfwgt')
-    ana.combine_info()
-    ana.set_total_combine()
-    ana.import_result('xsec_outputs.txt')###input = where to save the output file
+    LIST = os.listdir(os.getcwd())
+    JOBDIRLIST= []
+    FAILLIST= []
+    for jobdir in LIST:
+        if os.path.isdir(os.getcwd()+"/"+jobdir) and ("JOBDIR" in jobdir) : 
+            JOBDIRLIST.append(jobdir)
+            print jobdir
 
+
+
+
+    for jobdir in JOBDIRLIST:
+        print str(jobdir)
+#        while True:
+#            try:
+        ana = output_parser()
+        #    ana.set_output_format('.out')
+        ana.set_output_format('.err')
+        #ana.set_flist('JOBDIR_dyellell012j_5f_LO_MLM_mg261_false_pdfwgt_10_4000_500_1.0_slc6_amd64_gcc630_CMSSW_9_3_8/')
+        ana.set_flist(jobdir)
+                #    ana.set_flist('/afs/cern.ch/work/j/jhchoi/public/log_lv_bwcutoff_WJetsToLNu_HT-incl_VMG5_26x_false_pdfwgt') ##input = directory ##default dir = pwd  
+                #    ana.set_flist('lv_bwcutoff_WJetsToLNu_HT-incl_VMG5_26x_false_pdfwgt')
+        ana.combine_info()
+        if ana.N_fvalid == 0: 
+            print "@@FAIL::::"+jobdir+"::::::@@"
+            FAILLIST.append(jobdir)
+            continue
+        ana.set_total_combine()
+        ana.import_result(jobdir+'_xsec_outputs.txt')###input = where to save the output file
+        del ana
+            #break
+            #except ValueError:
+            #    print "!!!!ERROR!!!!!"
+            #    continue
+    print "@@@@@@FAIL LIST@@@@"
+    for faildir in FAILLIST:
+        print faildir
