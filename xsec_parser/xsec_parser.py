@@ -9,48 +9,42 @@ import glob
 import os
 import re
 import math
+import copy
 
 class output_parser:
     ##This class is for a file
-    fs_output = []
-    f_current=''
-    N_fvalid=0 ## valid file
-    xsec_info=[]
-    xsec_start_phrase = "GenXsecAnalyzer"
-    xsec_end_phrase = "============================================="
-    xsec_start_phrase_i = "Process\t\txsec_before"
-    xsec_end_phrase_i = "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- "
-
-    txsec_info=[]
-    total_xsec_no_merge=0
-    N_event_no_merge=0
-    total_xsec_start_phrase = "PYTHIA Process Initialization"
-    total_xsec_end_phrase = "End PYTHIA Multiparton Interactions Initialization"
-
     
-    N_process=0
-    process=[] #####Processes in the file
-
-    process_combine=[] ### combined info using all files in the target directory # size = N processes
-
-    output_format='.out'
-    
-    def __init__(self):    
+    def __init__(self):
+        self.N_process=0
+        self.name=""
         self.fs_output = []
+        self.fs_output=copy.deepcopy(self.fs_output)
+        self.process_combine=[]
+        self.process_combine=copy.deepcopy(self.process_combine)
+        self.process=[]
+        self.process=copy.deepcopy(self.process)
         self.f_current=''
         self.N_fvalid=0
         self.xsec_info=[]
+        self.xsec_info=copy.deepcopy(self.xsec_info)
         self.xsec_start_phrase = "GenXsecAnalyzer"
         self.xsec_end_phrase = "============================================="
         self.xsec_start_phrase_i = "Process\t\txsec_before"
         self.xsec_end_phrase_i = "-----------------------------------------------------------------------------"
         self.txsec_info=[]
+        self.txsec_info=copy.deepcopy(self.txsec_info)
         self.total_xsec_no_merge=0
         self.N_event_no_merge=0
         self.total_xsec_start_phrase = "PYTHIA Process Initialization"
         self.total_xsec_end_phrase = "End PYTHIA Multiparton Interactions Initialization"
         self.output_format='.out'
-    
+    def __del__(self):
+        del self.process[:]
+        del self.txsec_info[:]
+        del self.fs_output[:]
+        del self.xsec_info[:]
+        del self.process_combine[:]
+        
     class i_process: ####This class is for a process (ith process)
  
         def __init__(self,i):
@@ -223,8 +217,7 @@ class output_parser:
     
     def clear_process_combine(self):
         del self.process_combine[:]
-    def clear_total_combine(self):
-        del self.totalcombine[:]
+ 
 
     def get_xsec_info(self):
         _file_=self.f_current
