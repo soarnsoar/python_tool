@@ -2,12 +2,12 @@
 #import FWCore.ParameterSet.Config as cms
 
 tautauFilter = cms.EDFilter("LHEGenericFilter",
-    src = cms.InputTag("source"),
+    src = cms.InputTag("externalLHEProducer"),
     NumRequired = cms.int32(2),
     ParticleID = cms.vint32(15),
     AcceptLogic = cms.string("EQ") # LT meaning < NumRequired, GT >, EQ =, NE !=
 )           
 
 
-ProductionFilterSequence = cms.Sequence(generator+tautauFilter)
+ProductionFilterSequence = cms.Sequence(tautauFilter+generator)
 
