@@ -118,33 +118,37 @@ for line in lines:
                     done=0
             if not '/' in output: ## if no output -> searching with next keyword
                 continue
+            if '*' in output : continue
+            #print "ouput=>>>>>>"+output
             output_list=output_list+output.split('\n')
         output_list=list(set(output_list)) ##removing duplicates
         nsample=len(output_list)
         #print "nsample="+str(nsample)
         if nsample==0: continue
                         
-        
+
         if nsample==1: ## only one corresponding sample
-            
+            print key+" updated :)"
+            msg_vjhugen_change=''
+            msg_ext=''
             if 'jhugen' in key.lower():
-                print key+" updated :) --> !!jhugen version is in latino sample alias...checking..."
+                print "--> !!jhugen version is in latino sample alias...checking..."
 
-                msg_vjhugen_change=''
-
+        
+                ##Check vJHUHen in DAS dataset name##
                 vjhugen_das=''
                 
                 for part in output_list[0].split('_'):
                     if 'jhugen' in part.lower() : 
                         #print '->datasetname in DAS='+part 
                         vjhugen_das=part.lower().replace('jhugen','').replace('v','')
-                
+                ##Check vJHUHen in latino sample alias##
                 vjhugen_alias=''
                 for part in key.split('_'):
                     if 'jhugen' in part.lower() :
                     #print '->datasetname in latino alias='+part
                         vjhugen_alias=part.lower().replace('jhugen','').replace('v','')
-                
+                ##if the two versions are not matched##        
                 if vjhugen_das!=vjhugen_alias :
                     print "!!!!!!!!!Version is not matched. Alias should be fixed!!!.."+vjhugen_alias+"->"+vjhugen_das
                     new_key=[]
@@ -154,18 +158,17 @@ for line in lines:
                         new_key.append(part)
                     key='_'.join(new_key)
                     msg_vjhugen_change='vjhugen is changed :'+vjhugen_alias+"->"+vjhugen_das
+                ##if the two version are matched
                 else :
                     print '->OK'
-
-                towrite="Samples['"+key+"'] = {'nanoAOD' :'"+output_list[0]+"'} ####Updated! ->"+msg_vjhugen_change
-                
-
-            else:
-                print key+" updated :)"
-                #Format#example#
-                #Samples['WgStarLNuEE'] = {'nanoAOD' :'/WGstarToLNuEE_012Jets_13TeV-madgraph/RunIISummer16NanoAODv4-PUMoriond17_Nano14Dec2018_102X_mcRun2_asymptotic_v6-v1/NANOAODSIM'}
-                towrite="Samples['"+key+"'] = {'nanoAOD' :'"+output_list[0]+"'} ####Updated! \n"
-                fnew.write(towrite)
+            ##if extension sample
+            if 'ext' in key:
+                if not 'ext' in output_list[0] : continue ##das name has no ext tag -> pass
+                msg_ext=' !!ext sample!! check extension tag exists!!'
+            
+            towrite="Samples['"+key+"'] = {'nanoAOD' :'"+output_list[0]+"'} ####Updated! ->"+msg_vjhugen_change+msg_ext
+            fnew.write("#old#"+line)
+            fnew.write(towrite)
 
 
 
@@ -174,11 +177,16 @@ for line in lines:
             #print "##"+key
             by_hand_list.append("##-----------"+key+" is updated##")
             #print output
+            fnew.write(line)
+            fnew.write("##------choose one of the following samples-------##")
             for output_i in output_list:
                 towrite="Samples['"+key+"'] = {'nanoAOD' :'"+output_i+"'}"
                 by_hand_list.append(towrite)
                 #print towrite
-            fnew.write(line)
+                fnew.write(output_i)
+            fnew.write("##------------------------------------------------##")
+
+            #fnew.write(line)
         
                         
 
@@ -189,7 +197,7 @@ fnew.close()
 
 print "@@@@@@@@Choose one of the samples for each process@@@@@@@@@@"
 for byhand in by_hand_list:
-    print byhand
+    print byhand+"\n"
 
 
 
