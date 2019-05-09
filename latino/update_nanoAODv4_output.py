@@ -104,10 +104,18 @@ for line in lines:
             #For example : 
             #dasgoclient -query="dataset=/GGJets*/*Fall17*/MINI*"
             #print "####Checking-->>>"+datasetname
-            dascheck='dasgoclient -query="dataset=/'+search_phr+'"'
+            done=0
+            output=''
+            status=''
+            dascheck='dasgoclient -timeout 5 -query="dataset=/'+search_phr+'"'
             #print dascheck
             #--get das output list
-            status, output = commands.getstatusoutput(dascheck)
+            while done==0:
+                try:
+                    status, output = commands.getstatusoutput(dascheck)
+                    done=1
+                except:
+                    done=0
             if not '/' in output: ## if no output -> searching with next keyword
                 continue
             output_list=output_list+output.split('\n')
