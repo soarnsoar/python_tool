@@ -178,13 +178,13 @@ for line in lines:
             by_hand_list.append("##-----------"+key+" is updated##")
             #print output
             fnew.write(line)
-            fnew.write("##------choose one of the following samples-------##")
+            fnew.write("##UPDATED!!!BUT..------choose one of the following samples-------##")
             for output_i in output_list:
                 towrite="Samples['"+key+"'] = {'nanoAOD' :'"+output_i+"'}"
                 by_hand_list.append(towrite)
                 #print towrite
                 fnew.write(output_i)
-            fnew.write("##------------------------------------------------##")
+            fnew.write("##---------------------------------------------------------------##")
 
             #fnew.write(line)
         
