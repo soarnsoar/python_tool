@@ -5,15 +5,15 @@ import commands
 
 ####### Setting #########
 ##---Which list to check---##
-#inputfile='Summer16_102X_nAODv4.py'
+inputfile='Summer16_102X_nAODv4.py'
 #inputfile='fall17_102X_nAODv4.py'
-inputfile='Autumn18_102X_nAODv4_v16.py'
+#inputfile='Autumn18_102X_nAODv4_v16.py'
 
 
 ##---campaign string in DAS datasetname
-#campaign='RunIISummer16NanoAODv4'
+campaign='RunIISummer16NanoAODv4'
 #campaign='RunIIFall17NanoAODv4'
-campaign='RunIIAutumn18NanoAODv4'
+#campaign='RunIIAutumn18NanoAODv4'
 #######End of Setting###########
 
 print "@@"+inputfile+"@@"
