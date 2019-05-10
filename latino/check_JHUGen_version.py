@@ -84,7 +84,8 @@ for key in Samples:
             if 'jhugen' in part.lower() :
                 #print '->datasetname in latino alias='+part                                                                                                                     
                 vjhugen_alias=part.lower().replace('jhugen','').replace('v','')
-                ##if the two versions are not matched##                                                                                                                              
+        print vjhugen_das+"/"+vjhugen_alias
+        ##if the two versions are not matched##                                                                                                                              
         if vjhugen_das!=vjhugen_alias :
             print "!!!!!!!!!Version is not matched. Alias should be fixed!!!.."+vjhugen_alias+"->"+vjhugen_das
         else:
