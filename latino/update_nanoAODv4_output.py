@@ -69,8 +69,11 @@ for line in lines:
 
 
     ##scan all unfinished sample and check whetehr this line corresponds to the sample 
+    fnew.write(line)
+
     for key in Samples:
-        if len(key.replace(' ',''))==0: continue
+        if len(key.replace(' ',''))==0:
+            continue
         if (not "#Samples['"+key+"']" in line_nospace) and (not '#Samples["'+key+'"]' in line_nospace) : continue
         full_datasetname=Samples[key]
         #print full_datasetname['nanoAOD']
@@ -128,7 +131,7 @@ for line in lines:
         #print "nsample="+str(nsample)
         if nsample==0: continue
                         
-        fnew.write("#Updated!#"+line)
+        fnew.write("#--->Updated!#")
         fnew.write("##------choose one of the following samples-------##Noutput="+str(nsample)+"\n")
         print key+" updated :)"
         if nsample==1: ## only one corresponding sample
