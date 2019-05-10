@@ -5,15 +5,15 @@ import commands
 
 ####### Setting #########
 ##---Which list to check---##
-inputfile='Summer16_102X_nAODv4.py'
+#inputfile='Summer16_102X_nAODv4.py'
 #inputfile='fall17_102X_nAODv4.py'
-#inputfile='Autumn18_102X_nAODv4_v16.py'
+inputfile='Autumn18_102X_nAODv4_v16.py'
 
 
 ##---campaign string in DAS datasetname
-campaign='RunIISummer16NanoAODv4'
+#campaign='RunIISummer16NanoAODv4'
 #campaign='RunIIFall17NanoAODv4'
-#campaign='RunIIAutumn18NanoAODv4'
+campaign='RunIIAutumn18NanoAODv4'
 #######End of Setting###########
 
 print "@@"+inputfile+"@@"
@@ -28,7 +28,7 @@ Samples={}
 ##line in nAODv4 list python commented out. 
 commented_lines=[]
 ##For ambigious case.
-by_hand_list=[]
+#by_hand_list=[]
 
 ##--Collect commented lines--##
 for line in lines:
@@ -75,35 +75,37 @@ for line in lines:
         full_datasetname=Samples[key]
         #print full_datasetname['nanoAOD']
         
-
+        keyword_list=[]
         ###---Search samples with keyword -> old datasetname/Sample alias/
-        datasetname_list=[full_datasetname['nanoAOD'].split('/')[1],  key]
-        if 'HZJ_H' in key and 'tautau' in key: datasetname_list.append( key.replace('HZJ_H','ZH')  )
-        elif 'HWminusJ_H' in key and 'tautau' in key: datasetname_list.append( key.replace('HWminusJ_H','WminusH')  )
-        elif 'HWplusJ_H' in key and 'tautau' in key: datasetname_list.append( key.replace('HWplusJ_H','WplusH')  )
+        if len(full_datasetname['nanoAOD'].split('/'))>1:
+            keyword_list.append(full_datasetname['nanoAOD'].split('/')[1])
+        keyword_list.append(key)
+        if 'HZJ_H' in key and 'tautau' in key: keyword_list.append( key.replace('HZJ_H','ZH')  )
+        elif 'HWminusJ_H' in key and 'tautau' in key: keyword_list.append( key.replace('HWminusJ_H','WminusH')  )
+        elif 'HWplusJ_H' in key and 'tautau' in key: keyword_list.append( key.replace('HWplusJ_H','WplusH')  )
     
         ##To scan all jhugen version## --> remove jhugen version and search
-        datasetname_list_noV=[]
-        for datasetname in datasetname_list:
+        keyword_list_noV=[]
+        for keyword in keyword_list:
             
             name_temp=[]
-            for part in datasetname.split('_'): ## <process>_<jhugen>_<mass> :
+            for part in keyword.split('_'): ## <process>_<jhugen>_<mass> :
                 if 'jhugen' in part.lower():
                     continue
                 if 'M' in part: ##Mass -> search with *M400_*. if using M400, M4000 can be included
                     part=part+"_"
                 name_temp.append(part)
             keyword='*'.join(name_temp)
-            datasetname_list_noV.append(keyword)##for example ) GluGluHTo2L2Nu*M400
+            keyword_list_noV.append(keyword)##for example ) GluGluHTo2L2Nu*M400
             #print "keyword="+keyword
-        datasetname_list=datasetname_list+datasetname_list_noV
+        keyword_list=keyword_list+keyword_list_noV
         output_list=[]
-        for datasetname in datasetname_list:
+        for keyword in keyword_list:
             ##check das output
-            search_phr=datasetname+"*/*"+campaign+"*/NANOAODSIM"
+            search_phr=keyword+"*/*"+campaign+"*/NANOAODSIM"
             #For example : 
             #dasgoclient -query="dataset=/GGJets*/*Fall17*/MINI*"
-            #print "####Checking-->>>"+datasetname
+            #print "####Checking-->>>"+keyword
             done=0
             output=''
             status=''
@@ -126,9 +128,14 @@ for line in lines:
         #print "nsample="+str(nsample)
         if nsample==0: continue
                         
-
+        fnew.write("#Updated!#"+line)
+        fnew.write("##------choose one of the following samples-------##Noutput="+str(nsample)+"\n")
+        print key+" updated :)"
         if nsample==1: ## only one corresponding sample
-            print key+" updated :)"
+
+
+
+
             msg_vjhugen_change=''
             msg_ext=''
             if 'jhugen' in key.lower():
@@ -166,8 +173,8 @@ for line in lines:
                 if not 'ext' in output_list[0] : continue ##das name has no ext tag -> pass
                 msg_ext=' !!ext sample!! check extension tag exists!!'
             
-            towrite="Samples['"+key+"'] = {'nanoAOD' :'"+output_list[0]+"'} ####Updated! ->"+msg_vjhugen_change+msg_ext
-            fnew.write("#old#"+line)
+            towrite="Samples['"+key+"'] = {'nanoAOD' :'"+output_list[0]+"'} ##!!"+msg_vjhugen_change+msg_ext+"!!\n"
+
             fnew.write(towrite)
 
 
@@ -175,16 +182,16 @@ for line in lines:
         elif nsample>1:
             #print "!!!You should choose one of the sample and add it to new sample list python by hand"
             #print "##"+key
-            by_hand_list.append("##-----------"+key+" is updated##")
+            #by_hand_list.append("##-----------"+key+" is updated##")
             #print output
-            fnew.write(line)
-            fnew.write("##UPDATED!!!BUT..------choose one of the following samples-------##")
+            #fnew.write(line)
+            #fnew.write("##UPDATED!!!BUT..------choose one of the following samples-------##")
             for output_i in output_list:
-                towrite="Samples['"+key+"'] = {'nanoAOD' :'"+output_i+"'}"
-                by_hand_list.append(towrite)
+                towrite="Samples['"+key+"'] = {'nanoAOD' :'"+output_i+"'}\n"
+                #by_hand_list.append(towrite)
                 #print towrite
-                fnew.write(output_i)
-            fnew.write("##---------------------------------------------------------------##")
+                fnew.write(towrite)
+        fnew.write("##---------------------------------------------------------------##\n")
 
             #fnew.write(line)
         
@@ -195,10 +202,10 @@ for line in lines:
 fnew.close()
 
 
-print "@@@@@@@@Choose one of the samples for each process@@@@@@@@@@"
-for byhand in by_hand_list:
-    print byhand+"\n"
+#print "@@@@@@@@Choose one of the samples for each process@@@@@@@@@@"
+#for byhand in by_hand_list:
+#    print byhand+"\n"
 
-
+print "!!!!!Please check ---->"+inputfile+"_new.py!!!!!"
 
         
