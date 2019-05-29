@@ -16,4 +16,7 @@ for line in lines:
 
 fnew.write('''EndTime=$(date +%s)
 echo $EndTime
-echo "runtime : $(($EndTime - $StartTime)) sec"''')
+echo "runtime : $(($EndTime - $StartTime)) sec"
+echo -e "JOBDIR:${PWD}\nargs=$@ " | mail -s "FINISHED JOB @ $HOSTNAME" $USER@cern.ch
+''')
+
