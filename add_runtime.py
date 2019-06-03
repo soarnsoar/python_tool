@@ -20,3 +20,4 @@ echo "runtime : $(($EndTime - $StartTime)) sec"
 echo -e "JOBDIR:${PWD}\nargs=$@ " | mail -s "FINISHED JOB @ $HOSTNAME" $USER@cern.ch
 ''')
 
+os.system('chmod u+x '+INPUT_SCRIPT)
