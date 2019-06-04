@@ -11,6 +11,7 @@ fnew=open(INPUT_SCRIPT,'w')
 fnew.write('StartTime=$(date +%s)\n')
 
 for line in lines:
+    if 'proxy-watcher -remove' in line: continue
     fnew.write(line)
 
 
