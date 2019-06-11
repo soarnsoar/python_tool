@@ -27,9 +27,9 @@ def check_file_das(JOBDIR,jobname):
 
 
 TREEDIR='/xrootd/store/user/jhchoi/Latino/HWWNano/'
-#JOBDIR='NanoGardening__Summer16_102X_nAODv4_Full2016v4'
+JOBDIR='NanoGardening__Summer16_102X_nAODv4_Full2016v4'
 #JOBDIR='NanoGardening__Run2016_102X_nAODv4_Full2016v4'
-JOBDIR='NanoGardening__Fall2017_102X_nAODv4_Full2017v4'
+#JOBDIR='NanoGardening__Fall2017_102X_nAODv4_Full2017v4'
 #JOBDIR='NanoGardening__Run2017_102X_nAODv4_Full2017v4'                                                                       
 
 
@@ -100,8 +100,9 @@ LIST_FAIL={}
 LIST_ZOMBIE={}
 for name in NAMES:
     #NanoGardening__Summer16_102X_nAODv4_Full2016v4/NanoGardening__Summer16_102X_nAODv4_Full2016v4__MCl1loose2016__TTZjets__part9
-
-
+    #NanoGardening__Summer16_102X_nAODv4_Full2016v4__MCl1loose2016__TTZjets__part9
+    #NanoGardening__Summer16_102X_nAODv4_Full2016v4__MCCorr2016__GluGluHToWWToLNuQQ_M4000__part18____MCl1loose2016
+    #MCl1loose2016__MCCorr2016/
     name=name.split('/')[-1]
     name=name.strip('/')
     
@@ -109,12 +110,23 @@ for name in NAMES:
     Step=name.split('__')[2]
     Sample=name.split('__')[3]
     part=name.split('__')[4]
-    
+    input_s=''
+    if name.split('____')[1]:
+        #print "@@check input step@@"
+        input_s=name.split('____')[1]
 
+    #print "Production="+Production
+    #print "Step="+Step
+    #print "Sample="+Sample
+    #print "part="+part
+    #print "input_s="+input_s
     #path
     #/xrootd/store/user/jhchoi/Latino/HWWNano/Summer16_102X_nAODv4_Full2016v4/MCl1loose2016/nanoLatino_WZZ__part0.root
-    filepath=TREEDIR+'/'+Production+"/"+Step+"/"+"nanoLatino_"+Sample+"__"+part+".root"
-
+    if input_s=='':
+        
+        filepath=TREEDIR+'/'+Production+"/"+Step+"/"+"nanoLatino_"+Sample+"__"+part+".root"
+    else:
+        filepath=TREEDIR+'/'+Production+"/"+input_s+"__"+Step+"/"+"nanoLatino_"+Sample+"__"+part+".root"
     if os.path.isfile(filepath):
         LIST_COMPLETE[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part}
     else:
@@ -142,6 +154,9 @@ for name in NAMES:
         else : LIST_RUNNING[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part}
 
 
+print "--Complete--"
+for a in LIST_COMPLETE:
+    print a
 print "--Running--"
 for a in LIST_RUNNING:
     print a
@@ -153,6 +168,20 @@ for a in LIST_ZOMBIE:
     print a
 
 LIST_FAIL_RESUB={}
+
+ANSWERED=0
+want_resub='n'
+while ANSWERED==0:
+    want_resub=raw_input('want to resubmit using condor_submit? (y/n)')
+    print(want_resub)
+    if want_resub=='y' or want_resub=='n':
+        ANSWERED=1
+    
+
+if want_resub=='n': 
+    exit()
+
+
 
 print "--check @ lxplus --"
 print "-sample py ="+sample_py
