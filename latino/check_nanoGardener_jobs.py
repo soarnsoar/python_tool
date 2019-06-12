@@ -21,14 +21,27 @@ def check_file_das(JOBDIR,jobname):
             out=False
     return out
 
+def parse_name(name):
+    info={}
+    info['Production']=name.split('__')[1]
+    info['Step']=name.split('__')[2]
+    info['Sample']=name.split('__')[3]
+    info['part']=name.split('__')[4]
+    info['input_s']=''
+    if len(name.split('____'))>1:
+        #print "@@check input step@@"                                                                                                                         
+        info['input_s']=name.split('____')[1]
+
+    return info
+
 ######END:preDefined functions######
 
 
 
 
 TREEDIR='/xrootd/store/user/jhchoi/Latino/HWWNano/'
-JOBDIR='NanoGardening__Summer16_102X_nAODv4_Full2016v4'
-#JOBDIR='NanoGardening__Run2016_102X_nAODv4_Full2016v4'
+#JOBDIR='NanoGardening__Summer16_102X_nAODv4_Full2016v4'
+JOBDIR='NanoGardening__Run2016_102X_nAODv4_Full2016v4'
 #JOBDIR='NanoGardening__Fall2017_102X_nAODv4_Full2017v4'
 #JOBDIR='NanoGardening__Run2017_102X_nAODv4_Full2017v4'                                                                       
 
@@ -105,16 +118,20 @@ for name in NAMES:
     #MCl1loose2016__MCCorr2016/
     name=name.split('/')[-1]
     name=name.strip('/')
-    
-    Production=name.split('__')[1]
-    Step=name.split('__')[2]
-    Sample=name.split('__')[3]
-    part=name.split('__')[4]
-    input_s=''
-    if name.split('____')[1]:
-        #print "@@check input step@@"
-        input_s=name.split('____')[1]
-
+    info=parse_name(name)
+    #Production=name.split('__')[1]
+    #Step=name.split('__')[2]
+    #Sample=name.split('__')[3]
+    #part=name.split('__')[4]
+    #input_s=''
+    #if len(name.split('____'))>1:
+    #    #print "@@check input step@@"
+    #    input_s=name.split('____')[1]
+    Production=info['Production']
+    Step=info['Step']
+    Sample=info['Sample']
+    part=info['part']
+    input_s=info['input_s']
     #print "Production="+Production
     #print "Step="+Step
     #print "Sample="+Sample
@@ -141,6 +158,7 @@ for name in NAMES:
         for line in lines:
             if 'Job terminated' in line:TERMINATED=True
             if 'Job was aborted by the user' in line: TERMINATED=True
+            if 'Job disconnected, attempting to reconnect' in line : ZOMBIE=True
         f.close()
         if not os.path.isfile(outpath): os.system('touch '+outpath)
         f=open(outpath)
@@ -149,9 +167,9 @@ for name in NAMES:
             if 'file probably overwritten: stopping reporting error messages' in line : ZOMBIE=True
         
 
-        if TERMINATED: LIST_FAIL[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part}
-        elif ZOMBIE    : LIST_ZOMBIE[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part}
-        else : LIST_RUNNING[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part}
+        if TERMINATED: LIST_FAIL[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
+        elif ZOMBIE    : LIST_ZOMBIE[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
+        else : LIST_RUNNING[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part,'input_s':input_s}
 
 
 print "--Complete--"
@@ -166,6 +184,43 @@ for a in LIST_FAIL:
 print "--ZOMBIE--"
 for a in LIST_ZOMBIE:
     print a
+
+
+print " --- kill zombie---"
+for a in LIST_ZOMBIE:
+    f=open(JOBDIR+'/'+a+'.jid')
+    lines=f.readlines()
+    jid=''
+    njob=''
+    for line in lines:
+        if 'job(s) submitted to cluster' in line:
+            jid=line.split('job(s) submitted to cluster')[1].strip()
+            njob=line.split('job(s) submitted to cluster')[0].strip()
+
+    if jid=='': print "!!Fail to get jobid of "+a
+    #print 'jobid='+jid
+    #print "njob="+njob
+    
+    for i in range(int(njob)):
+        os.system('condor_rm '+jid+str(i) )
+
+
+
+LIST_RESUB={}
+LIST_RESUB.update(LIST_FAIL)
+LIST_RESUB.update(LIST_ZOMBIE)
+
+LIST_RESUB_SAMPLENAME=[]
+print "---samples need resub ---"
+for a in LIST_RESUB:
+    samplename=LIST_FAIL[a]['Sample']
+    LIST_RESUB_SAMPLENAME.append(samplename)
+    #print samplename                                                                                                                                         
+
+LIST_RESUB_SAMPLENAME=list(set(LIST_RESUB_SAMPLENAME))
+for a in LIST_RESUB_SAMPLENAME:
+    print a
+
 
 LIST_FAIL_RESUB={}
 
@@ -183,31 +238,35 @@ if want_resub=='n':
 
 
 
-print "--check @ lxplus --"
+
 print "-sample py ="+sample_py
 exec open(sample_py).read()
-for a in LIST_FAIL:
+for a in LIST_RESUB:
     
     samplename=LIST_FAIL[a]['Sample']
-    print "@@samplename="+samplename
-    dascheck='dasgoclient -timeout 5 -query="file dataset='+Samples[samplename]['nanoAOD']+'"'
-    print "....."
-    status, output = commands.getstatusoutput(dascheck)
-    if check_file_das(JOBDIR,a):
+    print a
+    #print "@@samplename="+samplename
+    #print "LIST_FAIL[a]['input_s']="+LIST_FAIL[a]['input_s']
+    if LIST_FAIL[a]['input_s']=='':
+        dascheck='dasgoclient -timeout 5 -query="file dataset='+Samples[samplename]['nanoAOD']+'"'
+        print "....."
+        status, output = commands.getstatusoutput(dascheck)
+        if not check_file_das(JOBDIR,a): 
+            LIST_FAIL_RESUB[a]={'Production':LIST_FAIL[a]['Production'], 'Step':LIST_FAIL[a]['Step'], 'Sample':LIST_FAIL[a]['Sample'],'part':LIST_FAIL[a]['part']}
+            continue
     #if '/store' in output: ## if file exists->resubmit
         #print "output="+output
-        curdir=os.getcwd()
-        os.chdir(JOBDIR)
-        os.system('rm '+a+'.err')
-        os.system('rm '+a+'.out')
-        os.system('rm '+a+'.log')
-        os.system('rm '+a+'.jid')
-        resubmit='condor_submit '+a+'.jds > '+a+'.jid'
-        print resubmit
-        os.system(resubmit)
-        os.chdir(curdir)
-    else:
-        LIST_FAIL_RESUB[a]={'Production':LIST_FAIL[a]['Production'], 'Step':LIST_FAIL[a]['Step'], 'Sample':LIST_FAIL[a]['Sample'],'part':LIST_FAIL[a]['part']}
+    curdir=os.getcwd()
+    os.chdir(JOBDIR)
+    os.system('rm '+a+'.err')
+    os.system('rm '+a+'.out')
+    os.system('rm '+a+'.log')
+    os.system('rm '+a+'.jid')
+    resubmit='condor_submit '+a+'.jds > '+a+'.jid'
+    print resubmit
+    os.system(resubmit)
+    os.chdir(curdir)
+            
     print "--FIN.--"
 
 print "--RESUB FAIL--"
