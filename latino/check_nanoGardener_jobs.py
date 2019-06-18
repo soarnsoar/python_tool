@@ -4,6 +4,8 @@ import commands
 import ROOT
 
 
+
+
 ######preDefined functions######
 def check_file_das(JOBDIR,jobname):
     f=open(JOBDIR+'/'+jobname+'.py','r')
@@ -39,12 +41,12 @@ def parse_name(name):
 
 
 
+
 TREEDIR='/xrootd/store/user/jhchoi/Latino/HWWNano/'
 #JOBDIR='NanoGardening__Summer16_102X_nAODv4_Full2016v4'
 JOBDIR='NanoGardening__Run2016_102X_nAODv4_Full2016v4'
 #JOBDIR='NanoGardening__Fall2017_102X_nAODv4_Full2017v4'
 #JOBDIR='NanoGardening__Run2017_102X_nAODv4_Full2017v4'                                                                       
-
 
 ###Setup#### 
 Latino_sampleDir=''
