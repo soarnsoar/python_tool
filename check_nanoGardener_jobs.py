@@ -10,11 +10,15 @@ import ROOT
 def check_file_das(JOBDIR,jobname):
     f=open(JOBDIR+'/'+jobname+'.py','r')
     lines=f.readlines()
-
+    files=[]
     for line in lines:
-        if 'files' in line and 'root:/' in line: ##if this line defines sample's path
-            exec(line) ##then 'files' object is defined
-
+        #if 'files' in line and 'root:/' in line: ##if this line defines sample's path
+        #    exec(line) ##then 'files' object is defined
+        if 'root://cms-xrd-global.cern.ch/' in line and '.root' in line:
+            ftemp=line.split('root://cms-xrd-global.cern.ch/')[1]
+            ftemp=ftemp.split('.root')[0]
+            ftemp='root://cms-xrd-global.cern.ch/'+ftemp+'.root'
+            files.append(ftemp)
     out=True
     f.close()
     for f in files:
@@ -43,12 +47,12 @@ def parse_name(name):
 
 
 TREEDIR='/xrootd/store/user/jhchoi/Latino/HWWNano/'
-#JOBDIR='NanoGardening__Summer16_102X_nAODv4_Full2016v4'
+JOBDIR='NanoGardening__Summer16_102X_nAODv4_Full2016v4'
 #JOBDIR='NanoGardening__Run2016_102X_nAODv4_Full2016v4'
 #JOBDIR='NanoGardening__Fall2017_102X_nAODv4_Full2017v4'
 #JOBDIR='NanoGardening__Run2017_102X_nAODv4_Full2017v4'                                                                       
 #JOBDIR='NanoGardening__Autumn18_102X_nAODv4_GTv16_Full2018v4'
-JOBDIR='NanoGardening__Run2018_102X_nAODv4_14Dec_Full2018v4'
+#JOBDIR='NanoGardening__Autumn18_102X_nAODv4_GTv16_Full2018v4'
 ###Setup#### 
 Latino_sampleDir=''
 if os.getenv('CMSSW_BASE')=='': 
