@@ -166,9 +166,10 @@ for name in NAMES:
         logpath=JOBDIR+"/"+name+".log"
         outpath=JOBDIR+"/"+name+".out"
         jidpath=JOBDIR+"/"+name+".jid"
+        donepath=JOBDIR+"/"+name+".done"
         if not os.path.isfile(logpath): os.system('touch '+logpath)
-
-
+        if not os.path.isfile(jidpath): os.system('mv '+donepath+' '+jidpath)
+        
         jid=''
         f= open(jidpath)
         lines=f.readlines()
