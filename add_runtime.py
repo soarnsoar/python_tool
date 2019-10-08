@@ -18,7 +18,7 @@ for line in lines:
 fnew.write('''EndTime=$(date +%s)
 echo $EndTime
 echo "runtime : $(($EndTime - $StartTime)) sec"
-echo -e "JOBDIR:${PWD}\nargs=$@\nruntime=$(($EndTime - $StartTime))" | /bin/mailx -s "FINISHED JOB @ $HOSTNAME" $USER@cern.ch
+echo -e "JOBDIR:${PWD}\nargs=$@\nruntime=$(($EndTime - $StartTime))\nScriptName=@BASH_SOURCE" | /bin/mailx -s "FINISHED JOB @ $HOSTNAME" $USER@cern.ch
 ''')
 
 os.system('chmod u+x '+INPUT_SCRIPT)
