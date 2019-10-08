@@ -10,11 +10,15 @@ import ROOT
 def check_file_das(JOBDIR,jobname):
     f=open(JOBDIR+'/'+jobname+'.py','r')
     lines=f.readlines()
-
+    files=[]
     for line in lines:
-        if 'files' in line and 'root:/' in line: ##if this line defines sample's path
-            exec(line) ##then 'files' object is defined
-
+        #if 'files' in line and 'root:/' in line: ##if this line defines sample's path
+        #    exec(line) ##then 'files' object is defined
+        if 'root://cms-xrd-global.cern.ch/' in line and '.root' in line:
+            ftemp=line.split('root://cms-xrd-global.cern.ch/')[1]
+            ftemp=ftemp.split('.root')[0]
+            ftemp='root://cms-xrd-global.cern.ch/'+ftemp+'.root'
+            files.append(ftemp)
     out=True
     f.close()
     for f in files:
@@ -47,7 +51,8 @@ JOBDIR='NanoGardening__Summer16_102X_nAODv4_Full2016v4'
 #JOBDIR='NanoGardening__Run2016_102X_nAODv4_Full2016v4'
 #JOBDIR='NanoGardening__Fall2017_102X_nAODv4_Full2017v4'
 #JOBDIR='NanoGardening__Run2017_102X_nAODv4_Full2017v4'                                                                       
-
+#JOBDIR='NanoGardening__Autumn18_102X_nAODv4_GTv16_Full2018v4'
+#JOBDIR='NanoGardening__Autumn18_102X_nAODv4_GTv16_Full2018v4'
 ###Setup#### 
 Latino_sampleDir=''
 if os.getenv('CMSSW_BASE')=='': 
@@ -64,6 +69,10 @@ elif 'Fall2017_102X_nAODv4_Full2017v4' in JOBDIR:
     Latino_sampleFile='fall17_102X_nAODv4.py'
 elif 'Run2017_102X_nAODv4_Full2017v4' in JOBDIR:
     Latino_sampleFile='Run2017_102X_nAODv4.py'
+elif 'NanoGardening__Run2018_102X_nAODv4_14Dec_Full2018v4' in JOBDIR:
+    Latino_sampleFile='Run2018_102X_nAODv4_14Dec2018.py'
+elif 'NanoGardening__Autumn18_102X_nAODv4_GTv16_Full2018v4' in JOBDIR:
+    Latino_sampleFile='Autumn18_102X_nAODv4_v16.py'
 
 if Latino_sampleFile=='': 
     print "!!None matched sample python in Latino path!!"
@@ -111,6 +120,7 @@ print "--check output--"
 
 LIST_COMPLETE={}
 LIST_RUNNING={}
+LIST_NOT_STARTED={}
 LIST_FAIL={}
 LIST_ZOMBIE={}
 for name in NAMES:
@@ -152,33 +162,53 @@ for name in NAMES:
         ##for this job##
         TERMINATED=False
         ZOMBIE=False
+        STARTED=False
         logpath=JOBDIR+"/"+name+".log"
         outpath=JOBDIR+"/"+name+".out"
+        jidpath=JOBDIR+"/"+name+".jid"
         if not os.path.isfile(logpath): os.system('touch '+logpath)
+
+
+        jid=''
+        f= open(jidpath)
+        lines=f.readlines()
+
+        for line in lines:
+            if 'job(s) submitted to cluster' in line:
+                jid=line.split('job(s) submitted to cluster')[1].strip()
+                njob=line.split('job(s) submitted to cluster')[0].strip()
+        #print "[jhchoi]JOBDIR="+jid
+        f.close()
+        
         f= open(logpath)
         lines=f.readlines()
+        
         for line in lines:
-            if 'Job terminated' in line:TERMINATED=True
-            if 'Job was aborted by the user' in line: TERMINATED=True
-            if 'Job disconnected, attempting to reconnect' in line : ZOMBIE=True
+            if 'Job terminated' in line and jid in line:TERMINATED=True
+            if 'Job was aborted by the user' in line and jid in line: TERMINATED=True
+            if 'Job disconnected, attempting to reconnect' in line and jid in line : ZOMBIE=True
         f.close()
         if not os.path.isfile(outpath): os.system('touch '+outpath)
         f=open(outpath)
         lines=f.readlines()
         for line in lines:
             if 'file probably overwritten: stopping reporting error messages' in line : ZOMBIE=True
-        
+            if 'Processed' in line and 'entries' in line and 'elapsed time' in line and 'kHz, avg speed' in line : STARTED=True
 
         if TERMINATED: LIST_FAIL[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
         elif ZOMBIE    : LIST_ZOMBIE[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
+        elif not STARTED : LIST_NOT_STARTED[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
         else : LIST_RUNNING[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part,'input_s':input_s}
-
+    
 
 print "--Complete--"
 for a in LIST_COMPLETE:
     print a
 print "--Running--"
 for a in LIST_RUNNING:
+    print a
+print "--NOT Started yet"
+for a in LIST_NOT_STARTED:
     print a
 print "--FAIL--"
 for a in LIST_FAIL:
@@ -199,7 +229,7 @@ for a in LIST_ZOMBIE:
             jid=line.split('job(s) submitted to cluster')[1].strip()
             njob=line.split('job(s) submitted to cluster')[0].strip()
 
-    if jid=='': print "!!Fail to get jobid of "+a
+            if jid=='': print "!!Fail to get jobid of "+a
     #print 'jobid='+jid
     #print "njob="+njob
     
@@ -223,21 +253,73 @@ LIST_RESUB_SAMPLENAME=list(set(LIST_RESUB_SAMPLENAME))
 for a in LIST_RESUB_SAMPLENAME:
     print a
 
+print "---Summary---"
+print "COMPLETE="+str(len(LIST_COMPLETE))
+print "RUNNING="+str(len(LIST_RUNNING))
+print "NOT_STARTED="+str(len(LIST_NOT_STARTED))
+print "FAIL="+str(len(LIST_FAIL))
+print "ZOMBIE="+str(len(LIST_ZOMBIE))
+
 
 LIST_FAIL_RESUB={}
+
+
+ANSWERED=0
+want_remove='n'
+while ANSWERED==0:
+    want_remove=raw_input('want to remove not started samples using condor_submit? (y/n)')
+    print(want_remove)
+    if want_remove=='y' or want_remove=='n':
+        ANSWERED=1
+
+
+if want_remove=='y':
+
+    for a in LIST_NOT_STARTED:
+        f=open(JOBDIR+'/'+a+'.jid')
+        lines=f.readlines()
+        jid=''
+        njob=''
+        for line in lines:
+            if 'job(s) submitted to cluster' in line:
+                jid=line.split('job(s) submitted to cluster')[1].strip()
+                njob=line.split('job(s) submitted to cluster')[0].strip()
+
+            if jid=='': print "!!Fail to get jobid of "+a
+        #print 'jobid='+jid                                                                                                                                                           
+        #print "njob="+njob                                                                                                                                                           
+
+        for i in range(int(njob)):
+            os.system('condor_rm '+jid+str(i) )
+
+
+ANSWERED=0
+want_resub='n'
+
+while ANSWERED==0:
+    want_resub=raw_input('want to ad not started samples to failed job list? (y/n)')
+    print(want_resub)
+    if want_resub=='y' or want_resub=='n':
+        ANSWERED=1
+
+
+if want_resub=='y':
+
+    LIST_RESUB.update(LIST_NOT_STARTED)
+
 
 ANSWERED=0
 want_resub='n'
 while ANSWERED==0:
-    want_resub=raw_input('want to resubmit using condor_submit? (y/n)')
+    want_resub=raw_input('want to resubmit failed jobs using condor_submit? (y/n)')
     print(want_resub)
     if want_resub=='y' or want_resub=='n':
         ANSWERED=1
-    
 
-if want_resub=='n': 
+
+if want_resub=='n':
+    print "Please resubmit using the Latino NanoGardener"
     exit()
-
 
 
 
@@ -245,16 +327,16 @@ print "-sample py ="+sample_py
 exec open(sample_py).read()
 for a in LIST_RESUB:
     
-    samplename=LIST_FAIL[a]['Sample']
+    samplename=LIST_RESUB[a]['Sample']
     print a
     #print "@@samplename="+samplename
     #print "LIST_FAIL[a]['input_s']="+LIST_FAIL[a]['input_s']
-    if LIST_FAIL[a]['input_s']=='':
+    if LIST_RESUB[a]['input_s']=='':
         dascheck='dasgoclient -timeout 5 -query="file dataset='+Samples[samplename]['nanoAOD']+'"'
         print "....."
         status, output = commands.getstatusoutput(dascheck)
         if not check_file_das(JOBDIR,a): 
-            LIST_FAIL_RESUB[a]={'Production':LIST_FAIL[a]['Production'], 'Step':LIST_FAIL[a]['Step'], 'Sample':LIST_FAIL[a]['Sample'],'part':LIST_FAIL[a]['part']}
+            LIST_FAIL_RESUB[a]={'Production':LIST_RESUB[a]['Production'], 'Step':LIST_RESUB[a]['Step'], 'Sample':LIST_RESUB[a]['Sample'],'part':LIST_RESUB[a]['part']}
             continue
     #if '/store' in output: ## if file exists->resubmit
         #print "output="+output
