@@ -47,12 +47,14 @@ def parse_name(name):
 
 
 TREEDIR='/xrootd/store/user/jhchoi/Latino/HWWNano/'
-JOBDIR='NanoGardening__Summer16_102X_nAODv4_Full2016v4'
+#JOBDIR='NanoGardening__Summer16_102X_nAODv4_Full2016v4'
 #JOBDIR='NanoGardening__Run2016_102X_nAODv4_Full2016v4'
 #JOBDIR='NanoGardening__Fall2017_102X_nAODv4_Full2017v4'
 #JOBDIR='NanoGardening__Run2017_102X_nAODv4_Full2017v4'                                                                       
 #JOBDIR='NanoGardening__Autumn18_102X_nAODv4_GTv16_Full2018v4'
 #JOBDIR='NanoGardening__Autumn18_102X_nAODv4_GTv16_Full2018v4'
+#JOBDIR='NanoGardening__Run2017_102X_nAODv4_Full2017v5'
+JOBDIR='NanoGardening__Fall2017_102X_nAODv4_Full2017v5'
 ###Setup#### 
 Latino_sampleDir=''
 if os.getenv('CMSSW_BASE')=='': 
@@ -61,17 +63,17 @@ if os.getenv('CMSSW_BASE')=='':
 else :
     Latino_sampleDir=os.getenv('CMSSW_BASE')+'/src/LatinoAnalysis/NanoGardener/python/framework/samples/'
 Latino_sampleFile=''
-if 'Summer16_102X_nAODv4_Full2016v4' in JOBDIR:
+if 'Summer16_102X_nAODv4' in JOBDIR:
     Latino_sampleFile='Summer16_102X_nAODv4.py'
-elif 'Run2016_102X_nAODv4_Full2016v4' in JOBDIR:
+elif 'Run2016_102X_nAODv4' in JOBDIR:
     Latino_sampleFile='Run2016_102X_nAODv4.py'
-elif 'Fall2017_102X_nAODv4_Full2017v4' in JOBDIR:
+elif 'Fall2017_102X_nAODv4' in JOBDIR:
     Latino_sampleFile='fall17_102X_nAODv4.py'
-elif 'Run2017_102X_nAODv4_Full2017v4' in JOBDIR:
+elif 'Run2017_102X_nAODv4' in JOBDIR:
     Latino_sampleFile='Run2017_102X_nAODv4.py'
-elif 'NanoGardening__Run2018_102X_nAODv4_14Dec_Full2018v4' in JOBDIR:
+elif 'NanoGardening__Run2018_102X_nAODv4_14Dec' in JOBDIR:
     Latino_sampleFile='Run2018_102X_nAODv4_14Dec2018.py'
-elif 'NanoGardening__Autumn18_102X_nAODv4_GTv16_Full2018v4' in JOBDIR:
+elif 'NanoGardening__Autumn18_102X_nAODv4_GTv16' in JOBDIR:
     Latino_sampleFile='Autumn18_102X_nAODv4_v16.py'
 
 if Latino_sampleFile=='': 
