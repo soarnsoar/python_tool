@@ -54,7 +54,11 @@ TREEDIR='/xrootd/store/user/jhchoi/Latino/HWWNano/'
 #JOBDIR='NanoGardening__Autumn18_102X_nAODv4_GTv16_Full2018v4'
 #JOBDIR='NanoGardening__Autumn18_102X_nAODv4_GTv16_Full2018v4'
 #JOBDIR='NanoGardening__Run2017_102X_nAODv4_Full2017v5'
-JOBDIR='NanoGardening__Fall2017_102X_nAODv4_Full2017v5'
+#JOBDIR='NanoGardening__Fall2017_102X_nAODv4_Full2017v5'
+#JOBDIR='NanoGardening__Run2016_102X_nAODv4_Full2016v5'
+#JOBDIR='NanoGardening__Summer16_102X_nAODv4_Full2016v5'
+#JOBDIR='NanoGardening__Autumn18_102X_nAODv5_Full2018v5'
+JOBDIR='NanoGardening__Autumn18_102X_nAODv5_Full2018v5'
 ###Setup#### 
 Latino_sampleDir=''
 if os.getenv('CMSSW_BASE')=='': 
@@ -75,7 +79,8 @@ elif 'NanoGardening__Run2018_102X_nAODv4_14Dec' in JOBDIR:
     Latino_sampleFile='Run2018_102X_nAODv4_14Dec2018.py'
 elif 'NanoGardening__Autumn18_102X_nAODv4_GTv16' in JOBDIR:
     Latino_sampleFile='Autumn18_102X_nAODv4_v16.py'
-
+elif 'NanoGardening__Autumn18_102X_nAODv5_Full2018v5' in JOBDIR:
+    Latino_sampleFile='Autumn18_102X_nAODv5.py'
 if Latino_sampleFile=='': 
     print "!!None matched sample python in Latino path!!"
     exit()
@@ -158,8 +163,13 @@ for name in NAMES:
         filepath=TREEDIR+'/'+Production+"/"+Step+"/"+"nanoLatino_"+Sample+"__"+part+".root"
     else:
         filepath=TREEDIR+'/'+Production+"/"+input_s+"__"+Step+"/"+"nanoLatino_"+Sample+"__"+part+".root"
+
     if os.path.isfile(filepath):
-        LIST_COMPLETE[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part}
+        if os.stat(filepath).st_size == 512:
+            os.system('rm '+filepath)
+
+    if os.path.isfile(filepath):
+        LIST_COMPLETE[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part}    
     else:
         ##for this job##
         TERMINATED=False
@@ -168,8 +178,9 @@ for name in NAMES:
         logpath=JOBDIR+"/"+name+".log"
         outpath=JOBDIR+"/"+name+".out"
         jidpath=JOBDIR+"/"+name+".jid"
+        donepath=JOBDIR+"/"+name+".done"
         if not os.path.isfile(logpath): os.system('touch '+logpath)
-
+        if not os.path.isfile(jidpath): os.system('mv '+donepath+' '+jidpath)
 
         jid=''
         f= open(jidpath)
