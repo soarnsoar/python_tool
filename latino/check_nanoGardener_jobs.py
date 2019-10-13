@@ -165,7 +165,7 @@ for name in NAMES:
         filepath=TREEDIR+'/'+Production+"/"+input_s+"__"+Step+"/"+"nanoLatino_"+Sample+"__"+part+".root"
 
     if os.path.isfile(filepath):
-        if os.stat(filepath).st_size == 512:
+        if os.stat(filepath).st_size == 0:
             os.system('rm '+filepath)
 
     if os.path.isfile(filepath):
