@@ -59,7 +59,8 @@ TREEDIR='/xrootd/store/user/jhchoi/Latino/HWWNano/'
 #JOBDIR='NanoGardening__Summer16_102X_nAODv4_Full2016v5'
 #JOBDIR='NanoGardening__Autumn18_102X_nAODv5_Full2018v5'
 #JOBDIR='NanoGardening__Autumn18_102X_nAODv5_Full2018v5'
-JOBDIR='NanoGardening__Run2018_102X_nAODv5_Full2018v5'
+#JOBDIR='NanoGardening__Run2018_102X_nAODv5_Full2018v5'
+JOBDIR='NanoGardening__Fall2017_102X_nAODv4_Full2017v5'
 ###Setup#### 
 Latino_sampleDir=''
 if os.getenv('CMSSW_BASE')=='': 
@@ -169,8 +170,11 @@ for name in NAMES:
 
     if os.path.isfile(filepath):
         if os.stat(filepath).st_size == 0:
-            os.system('rm '+filepath)
+            os.system('rm '+filepath.replace('/xrootd/store/user/jhchoi/','/xrootd_user/jhchoi/xrootd/'))
             print "0 size file!!!-->"+filepath
+
+
+
     if os.path.isfile(filepath):
         #print filepath
         LIST_COMPLETE[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part}    
