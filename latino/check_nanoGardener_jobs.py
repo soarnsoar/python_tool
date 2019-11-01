@@ -2,6 +2,7 @@ import os
 import glob
 import commands
 import ROOT
+import sys
 
 
 
@@ -44,6 +45,8 @@ def parse_name(name):
 
 
 
+JOBDIR=sys.argv[1]
+print "@JOBDIR="+JOBDIR
 
 
 TREEDIR='/xrootd/store/user/jhchoi/Latino/HWWNano/'
@@ -60,7 +63,7 @@ TREEDIR='/xrootd/store/user/jhchoi/Latino/HWWNano/'
 #JOBDIR='NanoGardening__Autumn18_102X_nAODv5_Full2018v5'
 #JOBDIR='NanoGardening__Autumn18_102X_nAODv5_Full2018v5'
 #JOBDIR='NanoGardening__Run2018_102X_nAODv5_Full2018v5'
-JOBDIR='NanoGardening__Fall2017_102X_nAODv4_Full2017v5'
+#JOBDIR='NanoGardening__Fall2017_102X_nAODv4_Full2017v5'
 ###Setup#### 
 Latino_sampleDir=''
 if os.getenv('CMSSW_BASE')=='': 
@@ -189,7 +192,9 @@ for name in NAMES:
         donepath=JOBDIR+"/"+name+".done"
         if not os.path.isfile(logpath): os.system('touch '+logpath)
         if not os.path.isfile(jidpath): os.system('mv '+donepath+' '+jidpath)
-
+        if not os.path.isfile(jidpath) and not os.path.isfile(donepath) : 
+            LIST_NOT_STARTED[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
+            continue
         jid=''
         f= open(jidpath)
         lines=f.readlines()

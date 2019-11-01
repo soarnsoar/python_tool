@@ -86,6 +86,19 @@ for a in HASMISSING:
 
 
 ANSWERED=0
+want_remove='n'
+while ANSWERED==0:
+    want_remove=raw_input('want to remove jobs? (y/n)')
+    print(want_remove)
+    if want_remove=='y' or want_remove=='n':
+        ANSWERED=1
+
+
+if want_remove=='n':
+    exit()
+
+
+ANSWERED=0
 want_resub='n'
 while ANSWERED==0:
     want_resub=raw_input('want to resubmit using condor_submit? (y/n)')
@@ -94,12 +107,14 @@ while ANSWERED==0:
         ANSWERED=1
 
 
-if want_resub=='n':
-    exit()
+#if want_resub=='n':
+#    exit()
+
 
 
 for a in HASMISSING:
     a=a.split('/')[-1]
+    if not os.path.isfile(JOBDIR+'/'+a+'.jid'): continue
     f=open(JOBDIR+'/'+a+'.jid')
     lines=f.readlines()
     jid=''
@@ -109,11 +124,14 @@ for a in HASMISSING:
             jid=line.split('job(s) submitted to cluster')[1].strip()
             njob=line.split('job(s) submitted to cluster')[0].strip()
 
-    if jid=='': print "!!Fail to get jobid of "+a
+    if jid=='': 
+        print "!!Fail to get jobid of "+a
+        continue
     #print 'jobid='+jid                                                                                                                                                           
     #print "njob="+njob                                                                                                                                                           
 
     for i in range(int(njob)):
+ 
         os.system('condor_rm '+jid+str(i) )
 
 
@@ -124,9 +142,12 @@ for a in HASMISSING:
     os.system('rm '+a+'.err')
     os.system('rm '+a+'.out')
     os.system('rm '+a+'.log')
-    os.system('rm '+a+'.jid')
+    if os.path.isfile(a+'.jid'):
+        os.system('rm '+a+'.jid')
     resubmit='condor_submit '+a+'.jds > '+a+'.jid'
-    print resubmit
-    os.system(resubmit)
+    
+    if want_resub == 'y' :
+        print resubmit
+        os.system(resubmit)
     os.chdir(curdir)
 
