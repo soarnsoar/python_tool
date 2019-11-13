@@ -188,6 +188,7 @@ for name in NAMES:
         ZOMBIE=False
         STARTED=False
         logpath=JOBDIR+"/"+name+".log"
+        errpath=JOBDIR+"/"+name+".err"
         outpath=JOBDIR+"/"+name+".out"
         jidpath=JOBDIR+"/"+name+".jid"
         donepath=JOBDIR+"/"+name+".done"
@@ -221,6 +222,15 @@ for name in NAMES:
         for line in lines:
             if 'file probably overwritten: stopping reporting error messages' in line : ZOMBIE=True
             if 'Processed' in line and 'entries' in line and 'elapsed time' in line and 'kHz, avg speed' in line : STARTED=True
+        f.close()
+        if os.path.isfile(errpath):
+            f=open(errpath)
+            lines=f.readlines()
+            for line in lines:
+                if 'Error in <TFile::WriteBuffer>' in line : ZOMBIE=True
+                if 'Error in <TBasket::Streamer>' in line : ZOMBIE=True
+        
+
 
         if TERMINATED: LIST_FAIL[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
         elif ZOMBIE    : LIST_ZOMBIE[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
@@ -272,7 +282,8 @@ LIST_RESUB.update(LIST_ZOMBIE)
 LIST_RESUB_SAMPLENAME=[]
 print "---samples need resub ---"
 for a in LIST_RESUB:
-    samplename=LIST_FAIL[a]['Sample']
+    #samplename=LIST_FAIL[a]['Sample']
+    samplename=LIST_RESUB[a]['Sample']
     LIST_RESUB_SAMPLENAME.append(samplename)
     #print samplename                                                                                                                                         
 
