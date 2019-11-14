@@ -41,6 +41,29 @@ def parse_name(name):
 
     return info
 
+def change_workdir(shfile):
+    f=open(shfile,'r')
+    fnew=open(shfile+'_new','w')
+    lines=f.readlines()
+    curdir=os.getcwd()
+    print "curdir=",curdir
+    for line in lines:
+        #print "[DEBUG]",line
+        if 'cd' in line and curdir in line.replace('//','/'):
+            fnew.write('cd ${_CONDOR_SCRATCH_DIR}\n')
+            print "!!change workdir From"+line+'====>'+'cd ${_CONDOR_SCRATCH_DIR}'
+        else:
+            fnew.write(line)
+
+    f.close()
+    fnew.close()
+    os.system('mv '+shfile+'_new'+' '+shfile)
+    os.system('chmod u+x '+shfile)
+        
+
+
+
+
 ######END:preDefined functions######
 
 
@@ -229,7 +252,7 @@ for name in NAMES:
             for line in lines:
                 if 'Error in <TFile::WriteBuffer>' in line : ZOMBIE=True
                 if 'Error in <TBasket::Streamer>' in line : ZOMBIE=True
-        
+            f.close()
 
 
         if TERMINATED: LIST_FAIL[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
@@ -360,6 +383,17 @@ if want_resub=='n':
     exit()
 
 
+ANSWERED=0
+want_modify_workdir='n'
+while ANSWERED==0:
+    want_modify_workdir=raw_input('want to change workdir of failed jobs? (y/n)')
+    print(want_modify_workdir)
+    if want_modify_workdir=='y' or want_modify_workdir=='n':
+        ANSWERED=1
+
+
+
+
 
 print "-sample py ="+sample_py
 exec open(sample_py).read()
@@ -384,6 +418,7 @@ for a in LIST_RESUB:
     os.system('rm '+a+'.out')
     os.system('rm '+a+'.log')
     os.system('rm '+a+'.jid')
+    change_workdir(a+'.sh')
     resubmit='condor_submit '+a+'.jds > '+a+'.jid'
     print resubmit
     os.system(resubmit)
