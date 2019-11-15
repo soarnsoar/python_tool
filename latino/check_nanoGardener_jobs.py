@@ -418,7 +418,9 @@ for a in LIST_RESUB:
     os.system('rm '+a+'.out')
     os.system('rm '+a+'.log')
     os.system('rm '+a+'.jid')
-    change_workdir(a+'.sh')
+
+    if want_modify_workdir=='y':
+        change_workdir(a+'.sh')
     resubmit='condor_submit '+a+'.jds > '+a+'.jid'
     print resubmit
     os.system(resubmit)
