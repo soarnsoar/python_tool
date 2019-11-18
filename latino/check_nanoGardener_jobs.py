@@ -60,10 +60,69 @@ def change_workdir(shfile):
     os.system('mv '+shfile+'_new'+' '+shfile)
     os.system('chmod u+x '+shfile)
         
+def ConvertXROOTDpath(filepath):
+    if "root://cms-xrdr.private.lo:2094" in filepath:
+
+        filepath=filepath.split('/xrd/')[1]
+        filepath='/xrootd/'+filepath
+        filepath=filepath.replace('//','/').replace('/xrootd/store/user/jhchoi/Latino/HWWNano/','/xrootd_user/jhchoi/xrootd/Latino/HWWNano/')
+
+    return filepath
+
+def TFileOpen(filepath):
+    filepath=ConvertXROOTDpath(filepath)
+
+    ##if the file not exist
+    if not os.path.isfile(filepath):return False
+    #print filepath
+    f=ROOT.TFile(filepath,'READ')
+    myTree=f.Get("Events")
+
+    try:
+        boolean=bool(myTree.GetEntries())
+    except AttributeError:
+        boolean=False
+
+
+    f.Close()
+
+    del myTree
+    del f
+    
+    return boolean
+
+def CheckInputZombie(pypath):
+    output=False
+    f=open(pypath)
+    '''
+    sourceFiles=[
+    "root://cms-xrdr.private.lo:2094///xrd/store/user/jhchoi/Latino/HWWNano//Fall2017_102X_nAODv4_Full2017v5/MCl1loose2017v5__MCCorr2017v5__JESup//nanoLatino_DYJetsToLL_M-50_HT-100to200__part0.root"
+    ]    
+    '''    
+    lines=f.readlines()
+    READ=False
+    LinesToRead=''
+    for line in lines:
+        if 'sourceFiles=' in line.strip():
+            READ=True
+        if READ:
+            LinesToRead+=line
+            if ']' in line:##end of sourceFiles
+                READ=False
+            
+            
 
 
 
-
+    f.close()
+    exec(LinesToRead)
+    for s in sourceFiles:
+        isvalid=TFileOpen(s)
+        if not isvalid:
+            print '[ZOMBIE]',ConvertXROOTDpath(s)
+            output=True
+            
+    return output
 ######END:preDefined functions######
 
 
@@ -155,12 +214,54 @@ for a in HASMISSING:
 
 print "--check output--"
 
+os.system('mkdir -p '+JOBDIR+'/donelogs/')
+
 LIST_COMPLETE={}
 LIST_RUNNING={}
 LIST_NOT_STARTED={}
 LIST_FAIL={}
 LIST_ZOMBIE={}
+LIST_ZOMBIEINPUT={}
+
+
+print "@@Remove zombie files"
 for name in NAMES:
+
+    name=name.split('/')[-1]
+    name=name.strip('/')
+    info=parse_name(name)
+    Production=info['Production']
+    Step=info['Step']
+    Sample=info['Sample']
+    part=info['part']
+    input_s=info['input_s']
+    if input_s=='':
+
+        filepath=TREEDIR+'/'+Production+"/"+Step+"/"+"nanoLatino_"+Sample+"__"+part+".root"
+    else:
+        filepath=TREEDIR+'/'+Production+"/"+input_s+"__"+Step+"/"+"nanoLatino_"+Sample+"__"+part+".root"
+
+    if os.path.isfile(filepath) :
+        if os.stat(filepath).st_size == 0 or not TFileOpen(filepath):
+            os.system('rm '+filepath.replace('/xrootd/store/user/jhchoi/','/xrootd_user/jhchoi/xrootd/'))
+            os.system('xrdfs root://cms-xrdr.private.lo:2094 rm '+filepath.replace('/xrootd/','//xrd/'))
+            print "0 size file!!!-->"+filepath
+
+
+
+print "@@FIN. ZOMBIE SCAN@@"
+idx=0
+print "@@Total N=",len(NAMES)
+
+
+
+
+
+
+
+for name in NAMES:
+    print "@@Checking->",idx,')',name
+    idx=idx+1
     #NanoGardening__Summer16_102X_nAODv4_Full2016v4/NanoGardening__Summer16_102X_nAODv4_Full2016v4__MCl1loose2016__TTZjets__part9
     #NanoGardening__Summer16_102X_nAODv4_Full2016v4__MCl1loose2016__TTZjets__part9
     #NanoGardening__Summer16_102X_nAODv4_Full2016v4__MCCorr2016__GluGluHToWWToLNuQQ_M4000__part18____MCl1loose2016
@@ -202,19 +303,51 @@ for name in NAMES:
 
 
 
-    if os.path.isfile(filepath):
+#    if os.path.isfile(filepath):
+    #if ROOT.TFile.Open(filepath):
+    if TFileOpen(filepath):
         #print filepath
-        LIST_COMPLETE[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part}    
+        LIST_COMPLETE[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part}
+        logpath=JOBDIR+"/"+name+".log"
+        errpath=JOBDIR+"/"+name+".err"
+        outpath=JOBDIR+"/"+name+".out"
+        jidpath=JOBDIR+"/"+name+".jid"
+        pypath=JOBDIR+"/"+name+".py"
+        shpath=JOBDIR+"/"+name+".sh"
+        jdspath=JOBDIR+"/"+name+".jds"
+        donepath=JOBDIR+"/"+name+".done"
+        #print "[jhchoi]rm done logs -> ",name
+        os.system('mv '+logpath+' '+JOBDIR+'/donelogs/ &> /dev/null')
+        os.system('mv '+pypath+' '+JOBDIR+'/donelogs/ &> /dev/null')
+        os.system('mv '+shpath+' '+JOBDIR+'/donelogs/ &> /dev/null')
+        os.system('mv '+jdspath+' '+JOBDIR+'/donelogs/ &> /dev/null')
+        os.system('mv '+errpath+' '+JOBDIR+'/donelogs/ &> /dev/null')
+        os.system('mv '+outpath+' '+JOBDIR+'/donelogs/ &> /dev/null')
+        os.system('mv '+jidpath+' '+JOBDIR+'/donelogs/ &> /dev/null')
+        os.system('mv '+donepath+' '+JOBDIR+'/donelogs/ &> /dev/null')
+
     else:
         ##for this job##
         TERMINATED=False
+        ZOMBIEINPUT=False
         ZOMBIE=False
         STARTED=False
         logpath=JOBDIR+"/"+name+".log"
         errpath=JOBDIR+"/"+name+".err"
         outpath=JOBDIR+"/"+name+".out"
         jidpath=JOBDIR+"/"+name+".jid"
+        pypath=JOBDIR+"/"+name+".py"
         donepath=JOBDIR+"/"+name+".done"
+        ##Check if input is zombie
+        if open(pypath):
+            #CheckInputZombie(pypath)
+            if CheckInputZombie(pypath)==True:
+                ZOMBIEINPUT=True
+
+            
+            
+        
+        
         if not os.path.isfile(logpath): os.system('touch '+logpath)
         if not os.path.isfile(jidpath): os.system('mv '+donepath+' '+jidpath)
         if not os.path.isfile(jidpath) and not os.path.isfile(donepath) : 
@@ -254,8 +387,8 @@ for name in NAMES:
                 if 'Error in <TBasket::Streamer>' in line : ZOMBIE=True
             f.close()
 
-
-        if TERMINATED: LIST_FAIL[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
+        if ZOMBIEINPUT : LIST_ZOMBIEINPUT[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
+        elif TERMINATED: LIST_FAIL[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
         elif ZOMBIE    : LIST_ZOMBIE[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
         elif not STARTED : LIST_NOT_STARTED[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
         else : LIST_RUNNING[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part,'input_s':input_s}
@@ -276,7 +409,9 @@ for a in LIST_FAIL:
 print "--ZOMBIE--"
 for a in LIST_ZOMBIE:
     print a
-
+print "--ZOMBIEINPUT--"
+for a in LIST_ZOMBIEINPUT:
+    print a
 
 print " --- kill zombie---"
 for a in LIST_ZOMBIE:
@@ -320,6 +455,7 @@ print "RUNNING="+str(len(LIST_RUNNING))
 print "NOT_STARTED="+str(len(LIST_NOT_STARTED))
 print "FAIL="+str(len(LIST_FAIL))
 print "ZOMBIE="+str(len(LIST_ZOMBIE))
+print "ZOMBIEINPUT="+str(len(LIST_ZOMBIEINPUT))
 
 
 LIST_FAIL_RESUB={}
