@@ -12,6 +12,7 @@ if "root://cms-xrdr.private.lo:2094" in INPUT:
 def BoolGetEnties(myTree):
     try:
         boolean=bool(myTree.GetEntries())
+        #print myTree.GetEntries()
     #except ValueError:
     except AttributeError:
         boolean=False
@@ -20,7 +21,7 @@ def BoolGetEnties(myTree):
 print INPUT
 
 f=TFile(INPUT,'READ')
-myTree=f.Get("Events")
+myTree=f.Get("Runs")
 
 
 output=BoolGetEnties(myTree)

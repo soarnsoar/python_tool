@@ -76,7 +76,7 @@ def TFileOpen(filepath):
     if not os.path.isfile(filepath):return False
     #print filepath
     f=ROOT.TFile(filepath,'READ')
-    myTree=f.Get("Events")
+    myTree=f.Get("Runs")
 
     try:
         boolean=bool(myTree.GetEntries())
