@@ -1,5 +1,6 @@
 from ROOT import TFile,TTree
 import sys
+import os
 
 
 
@@ -7,7 +8,10 @@ def ConvertPath(INPUT):
     if "root://cms-xrdr.private.lo:2094" in INPUT:
         INPUT=INPUT.split('/xrd/')[1]
         INPUT='/xrootd/'+INPUT
-        INPUT=INPUT.replace('//','/').replace('/xrootd/store/user/jhchoi/Latino/HWWNano/','/xrootd_user/jhchoi/xrootd/Latino/HWWNano/')
+        USER=str(os.environ("USER"))
+        print USER
+        if USER=="jhchoi":
+            INPUT=INPUT.replace('//','/').replace('/xrootd/store/user/jhchoi/Latino/HWWNano/','/xrootd_user/jhchoi/xrootd/Latino/HWWNano/')
     return INPUT
 
 def BoolGetEnties(myTree):
@@ -21,7 +25,7 @@ def BoolGetEnties(myTree):
 
 def OpenFileInPyroot(INPUT):
 
-    print INPUT
+    #print INPUT
     INPUT=ConvertPath(INPUT)
     f=TFile(INPUT,'READ')
     myTree=f.Get("Runs")
