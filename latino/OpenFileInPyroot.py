@@ -8,7 +8,7 @@ def ConvertPath(INPUT):
     if "root://cms-xrdr.private.lo:2094" in INPUT:
         INPUT=INPUT.split('/xrd/')[1]
         INPUT='/xrootd/'+INPUT
-        USER=str(os.environ("USER"))
+        USER=str(os.environ.get("USER"))
         print USER
         if USER=="jhchoi":
             INPUT=INPUT.replace('//','/').replace('/xrootd/store/user/jhchoi/Latino/HWWNano/','/xrootd_user/jhchoi/xrootd/Latino/HWWNano/')
