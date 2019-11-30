@@ -349,7 +349,7 @@ for name in NAMES:
         ##Check if input is zombie
         if open(pypath):
             #CheckInputZombie(pypath)
-            if CheckInputZombie(pypath)==True:
+            if CheckInputZombie(pypath)==True and input_s!='':
                 ZOMBIEINPUT=True
 
             
@@ -392,6 +392,7 @@ for name in NAMES:
             lines=f.readlines()
             for line in lines:
                 if 'Error in <TFile::WriteBuffer>' in line : ZOMBIE=True
+                if 'SysError in <TFile::ReadBuffer>: error reading from file' in line : ZOMBIE=True
                 if 'Error in <TBasket::Streamer>' in line : ZOMBIE=True
             f.close()
 
@@ -423,6 +424,7 @@ for a in LIST_ZOMBIEINPUT:
 
 print " --- kill zombie---"
 for a in LIST_ZOMBIE:
+    os.system('mv '+JOBDIR+'/'+a+'.done'+' '+JOBDIR+'/'+a+'.jid')
     f=open(JOBDIR+'/'+a+'.jid')
     lines=f.readlines()
     jid=''
@@ -484,6 +486,7 @@ while ANSWERED==0:
 if want_remove=='y':
 
     for a in LIST_NOT_STARTED:
+        
         f=open(JOBDIR+'/'+a+'.jid')
         lines=f.readlines()
         jid=''
