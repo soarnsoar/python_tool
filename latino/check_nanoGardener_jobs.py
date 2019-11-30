@@ -3,9 +3,17 @@ import glob
 import commands
 import ROOT
 import sys
+import argparse
 
+parser = argparse.ArgumentParser()
 
+parser.add_argument("--cleanjob", help="y or n")
 
+args = parser.parse_args()
+
+cleanjob=False
+if args.cleanjob:
+    cleanjob=True
 
 ######preDefined functions######
 def check_file_das(JOBDIR,jobname):
@@ -457,6 +465,8 @@ print "FAIL="+str(len(LIST_FAIL))
 print "ZOMBIE="+str(len(LIST_ZOMBIE))
 print "ZOMBIEINPUT="+str(len(LIST_ZOMBIEINPUT))
 
+if cleanjob : 
+    exit()
 
 LIST_FAIL_RESUB={}
 
@@ -464,6 +474,7 @@ LIST_FAIL_RESUB={}
 ANSWERED=0
 want_remove='n'
 while ANSWERED==0:
+
     want_remove=raw_input('want to remove not started samples using condor_submit? (y/n)')
     print(want_remove)
     if want_remove=='y' or want_remove=='n':
@@ -494,6 +505,7 @@ ANSWERED=0
 want_resub='n'
 
 while ANSWERED==0:
+
     want_resub=raw_input('want to ad not started samples to failed job list? (y/n)')
     print(want_resub)
     if want_resub=='y' or want_resub=='n':
@@ -522,6 +534,7 @@ if want_resub=='n':
 ANSWERED=0
 want_modify_workdir='n'
 while ANSWERED==0:
+
     want_modify_workdir=raw_input('want to change workdir of failed jobs? (y/n)')
     print(want_modify_workdir)
     if want_modify_workdir=='y' or want_modify_workdir=='n':
