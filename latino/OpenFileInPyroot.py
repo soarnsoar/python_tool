@@ -1,9 +1,9 @@
-from ROOT import TFile,TTree
+import ROOT
 import sys
 import os
 
 
-
+ROOT.gEnv.SetValue("TFile.Recover",0)
 def ConvertPath(INPUT):
     if "root://cms-xrdr.private.lo:2094" in INPUT:
         INPUT=INPUT.split('/xrd/')[1]
@@ -14,7 +14,7 @@ def ConvertPath(INPUT):
             INPUT=INPUT.replace('//','/').replace('/xrootd/store/user/jhchoi/Latino/HWWNano/','/xrootd_user/jhchoi/xrootd/Latino/HWWNano/')
     return INPUT
 
-def BoolGetEnties(myTree):
+def BoolGetEntries(myTree):
     try:
         boolean=bool(myTree.GetEntries())
         #print myTree.GetEntries()
@@ -24,14 +24,16 @@ def BoolGetEnties(myTree):
     return boolean
 
 def OpenFileInPyroot(INPUT):
-
+    
     #print INPUT
     INPUT=ConvertPath(INPUT)
-    f=TFile(INPUT,'READ')
+    f=ROOT.TFile(INPUT,'READ')
+    #print "bool(f.IsZombie())",bool(f.IsZombie())
+    IsZombie=bool(f.IsZombie())
     myTree=f.Get("Runs")
+    #print "bool(myTree)",bool(myTree)
 
-
-    output=BoolGetEnties(myTree)
+    output=BoolGetEntries(myTree)
     #print output
 
 
@@ -39,7 +41,7 @@ def OpenFileInPyroot(INPUT):
 
     del myTree
     del f
-    return output
+    return output and (not IsZombie)
 
 if __name__ == '__main__':
     INPUT=sys.argv[1]

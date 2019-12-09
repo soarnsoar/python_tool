@@ -5,15 +5,15 @@ import ROOT
 import sys
 import argparse
 
-parser = argparse.ArgumentParser()
+#parser = argparse.ArgumentParser()
 
-parser.add_argument("--cleanjob", help="y or n")
+#parser.add_argument("--cleanjob", help="y or n")
 
-args = parser.parse_args()
+#args = parser.parse_args()
 
-cleanjob=False
-if args.cleanjob:
-    cleanjob=True
+#cleanjob=False
+#if args.cleanjob:
+#    cleanjob=True
 
 ######preDefined functions######
 def check_file_das(JOBDIR,jobname):
@@ -84,6 +84,7 @@ def TFileOpen(filepath):
     if not os.path.isfile(filepath):return False
     #print filepath
     f=ROOT.TFile(filepath,'READ')
+    IsZombie=bool(f.IsZombie())
     myTree=f.Get("Runs")
 
     try:
@@ -97,7 +98,7 @@ def TFileOpen(filepath):
     del myTree
     del f
     
-    return boolean
+    return boolean and not IsZombie
 
 def CheckInputZombie(pypath):
     output=False
@@ -467,8 +468,8 @@ print "FAIL="+str(len(LIST_FAIL))
 print "ZOMBIE="+str(len(LIST_ZOMBIE))
 print "ZOMBIEINPUT="+str(len(LIST_ZOMBIEINPUT))
 
-if cleanjob : 
-    exit()
+#if cleanjob : 
+#    exit()
 
 LIST_FAIL_RESUB={}
 
