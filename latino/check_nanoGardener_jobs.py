@@ -395,6 +395,7 @@ for name in NAMES:
                 if 'Error in <TFile::WriteBuffer>' in line : ZOMBIE=True
                 if 'SysError in <TFile::ReadBuffer>: error reading from file' in line : ZOMBIE=True
                 if 'Error in <TBasket::Streamer>' in line : ZOMBIE=True
+                if 'There was a crash' in line : ZOMBIE=True
             f.close()
 
         if ZOMBIEINPUT : LIST_ZOMBIEINPUT[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
