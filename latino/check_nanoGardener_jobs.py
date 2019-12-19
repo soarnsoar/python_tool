@@ -348,7 +348,8 @@ for name in NAMES:
         pypath=JOBDIR+"/"+name+".py"
         donepath=JOBDIR+"/"+name+".done"
         ##Check if input is zombie
-        if open(pypath):
+        #if open(pypath):
+        if os.path.isfile(pypath):
             #CheckInputZombie(pypath)
             if CheckInputZombie(pypath)==True and input_s!='':
                 ZOMBIEINPUT=True
