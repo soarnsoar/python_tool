@@ -546,12 +546,32 @@ while ANSWERED==0:
     if want_modify_workdir=='y' or want_modify_workdir=='n':
         ANSWERED=1
 
+ANSWERED=0
+Nresub='all'
+while ANSWERED==0:
+
+    Nresub=raw_input('number of resub jobs? (all / number of job(int))')
+    print(Nresub)
+    if Nresub=='all':
+        ANSWERED=1
+    else:
+        try: 
+            int(Nresub)
+            ANSWERED=1
+        except ValueError:
+            ANSWERED=0
 
 
 
 
 print "-sample py ="+sample_py
 exec open(sample_py).read()
+idx_resub=0
+total_resub=0
+if Nresub=='all':
+    total_resub=len(LIST_RESUB)
+else:
+    total_resub=int(Nresub)
 for a in LIST_RESUB:
     
     samplename=LIST_RESUB[a]['Sample']
@@ -564,6 +584,7 @@ for a in LIST_RESUB:
         status, output = commands.getstatusoutput(dascheck)
         if not check_file_das(JOBDIR,a): 
             LIST_FAIL_RESUB[a]={'Production':LIST_RESUB[a]['Production'], 'Step':LIST_RESUB[a]['Step'], 'Sample':LIST_RESUB[a]['Sample'],'part':LIST_RESUB[a]['part']}
+            idx_resub+=1
             continue
     #if '/store' in output: ## if file exists->resubmit
         #print "output="+output
@@ -579,8 +600,11 @@ for a in LIST_RESUB:
     resubmit='condor_submit '+a+'.jds > '+a+'.jid'
     print resubmit
     os.system(resubmit)
+    idx_resub+=1
+    if idx_resub==total_resub:
+        break
     os.chdir(curdir)
-            
+    
     print "--FIN.--"
 
 print "--RESUB FAIL--"
