@@ -4,6 +4,56 @@ import commands
 import ROOT
 import sys
 import argparse
+from GetNJobs import GetNJobs
+from CheckRunningJob import CheckRunningJob
+import optparse
+from LatinoAnalysis.Tools.userConfig  import *
+
+#JOB_DIR_SPLIT = ( jobDirSplit == True )
+JOB_DIR_SPLIT=False
+
+usage = 'usage: %prog [options]'
+parser = optparse.OptionParser(usage)
+
+parser.add_option("-d","--remove_notstart",   dest="remove_notstart", help="Want to remove not started jobs")
+parser.add_option("-u","--resub_notstartd",   dest="resub_notstarted", help="want to add not started samples to failed job list")
+parser.add_option("-r","--resub_fail",   dest="resub_fail", help="want to resubmit failed jobs using condor_submit? (y/n)")
+parser.add_option("-c","--change_workdir",   dest="chworkdir", help="want to change workdir from home to scratch?")
+parser.add_option("-N","--nresub",   dest="Nresub", help="number of jobs for resub" )
+parser.add_option("-p","--passzombie",   dest="passzombie", help="pass zombie scan step", default=False, action="store_true" )
+
+(options, args) = parser.parse_args()
+
+USER=os.getenv('USER')
+
+if options.remove_notstart:
+    if options.remove_notstart!='y' and options.remove_notstart!='n':
+        print "wrong argument for --rm,--remove_notstart"
+        exit()
+
+if options.resub_notstarted:
+    if options.resub_notstarted!='y' and options.resub_notstarted!='n':
+        print "wrong argument for -restart, --resub_notstartd"
+        exit()
+if options.resub_fail:
+    if options.resub_fail!='y' and options.resub_fail!='n':
+        print "wrong argument for -resub --resub_fail"
+        exit()
+if options.chworkdir:
+    if options.chworkdir!='y' and options.chworkdir!='n':
+        print "wrong argument for -chdir --change_workdir"
+        exit()
+if options.Nresub:
+    if options.Nresub!='all':
+        try:
+            int(options.Nresub)
+        except ValueError:
+            print 'wrong argument for -N, --nresub' 
+            exit()
+
+
+#options.remove_notstart
+
 
 #parser = argparse.ArgumentParser()
 
@@ -16,8 +66,23 @@ import argparse
 #    cleanjob=True
 
 ######preDefined functions######
-def check_file_das(JOBDIR,jobname):
-    f=open(JOBDIR+'/'+jobname+'.py','r')
+
+    
+
+
+def CalcNSub(logpath):
+    f=open(logpath)
+    lines=f.readlines()
+    nsub=0
+    for line in lines:
+        if 'Job submitted from host' in line:
+            nsub+=1
+    f.close()
+    return nsub
+    
+    
+def check_file_das(pypath):
+    f=open(pypath,'r')
     lines=f.readlines()
     files=[]
     for line in lines:
@@ -199,12 +264,17 @@ NAMES=[]
 for form1 in FORMATS:
     for form2 in FORMATS:
         if form1==form2 : continue
+        FILES1=[]
+        
         FILES1=glob.glob(JOBDIR+"/*."+form1)
+        
         FILENAMES1=[]
         for a in FILES1: FILENAMES1.append(a.split(form1)[0].strip('.')) 
         
+        FILES2=[]
         
         FILES2=glob.glob(JOBDIR+"/*."+form2)
+        
         FILENAMES2=[]
         for a in FILES2: FILENAMES2.append(a.split(form2)[0].strip('.'))
         
@@ -215,6 +285,9 @@ for form1 in FORMATS:
         NAMES+=sumlist
 HASMISSING=list(set(HASMISSING))
 NAMES=list(set(NAMES))
+
+print "len(HASMISSING)=",len(HASMISSING)
+print "len(NAMES)=",len(NAMES)
 
 print "--need to check following jobs--"
 for a in HASMISSING:
@@ -231,11 +304,11 @@ LIST_NOT_STARTED={}
 LIST_FAIL={}
 LIST_ZOMBIE={}
 LIST_ZOMBIEINPUT={}
-
+LIST_OVER2RESUB={}
 
 print "@@Remove zombie files"
 for name in NAMES:
-
+    if options.passzombie:continue
     name=name.split('/')[-1]
     name=name.strip('/')
     info=parse_name(name)
@@ -252,8 +325,10 @@ for name in NAMES:
 
     if os.path.isfile(filepath) :
         if os.stat(filepath).st_size == 0 or not TFileOpen(filepath):
-            os.system('rm '+filepath.replace('/xrootd/store/user/jhchoi/','/xrootd_user/jhchoi/xrootd/'))
-            os.system('xrdfs root://cms-xrdr.private.lo:2094 rm '+filepath.replace('/xrootd/','//xrd/'))
+            if USER=='jhchoi':
+                os.system('rm '+filepath.replace('/xrootd/store/user/jhchoi/','/xrootd_user/jhchoi/xrootd/'))
+            else:
+                os.system('xrdfs root://cms-xrdr.private.lo:2094 rm '+filepath.replace('/xrootd/','//xrd/'))
             print "0 size file!!!-->"+filepath
 
 
@@ -306,26 +381,37 @@ for name in NAMES:
 
     if os.path.isfile(filepath):
         if os.stat(filepath).st_size == 0:
-            os.system('rm '+filepath.replace('/xrootd/store/user/jhchoi/','/xrootd_user/jhchoi/xrootd/'))
-            os.system('xrdfs root://cms-xrdr.private.lo:2094 rm '+filepath.replace('/xrootd/','//xrd/'))
-            print "0 size file!!!-->"+filepath
+            print "rm 0 size file!!!-->"+filepath
+            if USER=='jhchoi':
+                os.system('rm '+filepath.replace('/xrootd/store/user/jhchoi/','/xrootd_user/jhchoi/xrootd/'))
+            else:
+                os.system('xrdfs root://cms-xrdr.private.lo:2094 rm '+filepath.replace('/xrootd/','//xrd/'))
+            #print "0 size file!!!-->"+filepath
 
 
 
 #    if os.path.isfile(filepath):
     #if ROOT.TFile.Open(filepath):
+
+    logpath=JOBDIR+"/"+name+".log"
+    errpath=JOBDIR+"/"+name+".err"
+    outpath=JOBDIR+"/"+name+".out"
+    jidpath=JOBDIR+"/"+name+".jid"
+    pypath=JOBDIR+"/"+name+".py"
+    shpath=JOBDIR+"/"+name+".sh"
+    jdspath=JOBDIR+"/"+name+".jds"
+    donepath=JOBDIR+"/"+name+".done"
+    
+
+    
+
     if TFileOpen(filepath):
         #print filepath
         LIST_COMPLETE[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part}
-        logpath=JOBDIR+"/"+name+".log"
-        errpath=JOBDIR+"/"+name+".err"
-        outpath=JOBDIR+"/"+name+".out"
-        jidpath=JOBDIR+"/"+name+".jid"
-        pypath=JOBDIR+"/"+name+".py"
-        shpath=JOBDIR+"/"+name+".sh"
-        jdspath=JOBDIR+"/"+name+".jds"
-        donepath=JOBDIR+"/"+name+".done"
-        #print "[jhchoi]rm done logs -> ",name
+        
+
+
+        print "[jhchoi]mv done logs -> ",name
         os.system('mv '+logpath+' '+JOBDIR+'/donelogs/ &> /dev/null')
         os.system('mv '+pypath+' '+JOBDIR+'/donelogs/ &> /dev/null')
         os.system('mv '+shpath+' '+JOBDIR+'/donelogs/ &> /dev/null')
@@ -336,17 +422,19 @@ for name in NAMES:
         os.system('mv '+donepath+' '+JOBDIR+'/donelogs/ &> /dev/null')
 
     else:
+        if os.path.isfile(errpath):
+    
+            if os.path.getsize(errpath) > 1024.*1024.: ##if over 1MB err
+                print "err file size is over 1MB"
+                LIST_FAIL[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
+                os.system('rm '+errpath)
+                continue
         ##for this job##
         TERMINATED=False
         ZOMBIEINPUT=False
         ZOMBIE=False
         STARTED=False
-        logpath=JOBDIR+"/"+name+".log"
-        errpath=JOBDIR+"/"+name+".err"
-        outpath=JOBDIR+"/"+name+".out"
-        jidpath=JOBDIR+"/"+name+".jid"
-        pypath=JOBDIR+"/"+name+".py"
-        donepath=JOBDIR+"/"+name+".done"
+
         ##Check if input is zombie
         #if open(pypath):
         if os.path.isfile(pypath):
@@ -360,10 +448,21 @@ for name in NAMES:
         
         if not os.path.isfile(logpath): os.system('touch '+logpath)
         if not os.path.isfile(jidpath): os.system('mv '+donepath+' '+jidpath)
-        if not os.path.isfile(jidpath) and not os.path.isfile(donepath) : 
-            LIST_NOT_STARTED[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
-            continue
+        #if (not os.path.isfile(jidpath) and not os.path.isfile(donepath)):
+        #    #print "os.path.isfile(jidpath)",os.path.isfile(jidpath)
+        #    #print 'jidpath',jidpath
+        #    LIST_NOT_STARTED[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
+        #    continue
+        
+        
+        nsubmission=CalcNSub(logpath)
+        if nsubmission>2:
+            LIST_OVER2RESUB[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
+            os.system('touch '+logpath+str(nsubmission))
         jid=''
+        if not os.path.isfile(jidpath): ##NOT submitted, need resubmission
+            LIST_FAIL[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
+            continue
         f= open(jidpath)
         lines=f.readlines()
 
@@ -373,7 +472,10 @@ for name in NAMES:
                 njob=line.split('job(s) submitted to cluster')[0].strip()
         #print "[jhchoi]JOBDIR="+jid
         f.close()
-        
+        #print 'jid=',jid
+        if not CheckRunningJob(jid):
+            TERMINATED=True
+
         f= open(logpath)
         lines=f.readlines()
         
@@ -427,8 +529,16 @@ for a in LIST_ZOMBIEINPUT:
 
 print " --- kill zombie---"
 for a in LIST_ZOMBIE:
-    os.system('mv '+JOBDIR+'/'+a+'.done'+' '+JOBDIR+'/'+a+'.jid')
-    f=open(JOBDIR+'/'+a+'.jid')
+
+    
+
+    donepath=JOBDIR+'/'+a+'.done'
+    jidpath=JOBDIR+'/'+a+'.jid'
+
+
+
+    os.system('mv '+donepath+' '+jidpath)
+    f=open(jidpath)
     lines=f.readlines()
     jid=''
     njob=''
@@ -443,8 +553,7 @@ for a in LIST_ZOMBIE:
     
     for i in range(int(njob)):
         os.system('condor_rm '+jid+str(i) )
-
-
+    
 
 LIST_RESUB={}
 LIST_RESUB.update(LIST_FAIL)
@@ -456,7 +565,18 @@ for a in LIST_RESUB:
     #samplename=LIST_FAIL[a]['Sample']
     samplename=LIST_RESUB[a]['Sample']
     LIST_RESUB_SAMPLENAME.append(samplename)
+
+    Sample=LIST_RESUB[a]['Sample']
+    part=LIST_RESUB[a]['part']
+    print "@Clean up remaining root files"
+    rm_rfile='rm '+JOBDIR+'/'+'*'+Sample+'*'+part+'*.root'
+
+
     #print samplename                                                                                                                                         
+
+print "---LIST_OVER2RESUB---"
+for a in LIST_OVER2RESUB:
+    print a
 
 LIST_RESUB_SAMPLENAME=list(set(LIST_RESUB_SAMPLENAME))
 for a in LIST_RESUB_SAMPLENAME:
@@ -478,8 +598,13 @@ LIST_FAIL_RESUB={}
 
 ANSWERED=0
 want_remove='n'
+##if answered by option
+if options.remove_notstart:
+    ANSWERED=1
+    want_remove=options.remove_notstart
+    print 'want to remove not started samples using condor_submit?->',want_remove
 while ANSWERED==0:
-
+    
     want_remove=raw_input('want to remove not started samples using condor_submit? (y/n)')
     print(want_remove)
     if want_remove=='y' or want_remove=='n':
@@ -489,8 +614,9 @@ while ANSWERED==0:
 if want_remove=='y':
 
     for a in LIST_NOT_STARTED:
+        jidpath=JOBDIR+'/'+a+'.jid'
         
-        f=open(JOBDIR+'/'+a+'.jid')
+        f=open(jidpath)
         lines=f.readlines()
         jid=''
         njob=''
@@ -509,10 +635,14 @@ if want_remove=='y':
 
 ANSWERED=0
 want_resub='n'
-
+##if answered by option
+if options.resub_notstarted:
+    ANSWERED=1
+    want_resub=options.resub_notstarted
+    print "want to add not started samples to failed job list?",want_resub
 while ANSWERED==0:
 
-    want_resub=raw_input('want to ad not started samples to failed job list? (y/n)')
+    want_resub=raw_input('want to add not started samples to failed job list? (y/n)')
     print(want_resub)
     if want_resub=='y' or want_resub=='n':
         ANSWERED=1
@@ -525,6 +655,11 @@ if want_resub=='y':
 
 ANSWERED=0
 want_resub='n'
+##if answered by option
+if options.resub_fail:
+    ANSWERED=1
+    want_resub=options.resub_fail
+    print "want to resubmit failed jobs using condor_submit?->",want_resub
 while ANSWERED==0:
     want_resub=raw_input('want to resubmit failed jobs using condor_submit? (y/n)')
     print(want_resub)
@@ -539,6 +674,11 @@ if want_resub=='n':
 
 ANSWERED=0
 want_modify_workdir='n'
+##if answered by option
+if options.chworkdir:
+    ANSWERED=1
+    want_modify_workdir=options.chworkdir
+    print 'want to change workdir of failed jobs?',want_modify_workdir 
 while ANSWERED==0:
 
     want_modify_workdir=raw_input('want to change workdir of failed jobs? (y/n)')
@@ -548,9 +688,14 @@ while ANSWERED==0:
 
 ANSWERED=0
 Nresub='all'
+#if answered by option
+if options.Nresub:
+    ANSWERED=1
+    Nresub=options.Nresub
+    print 'number of resub jobs?->',Nresub 
 while ANSWERED==0:
 
-    Nresub=raw_input('number of resub jobs? (all / number of job(int))')
+    Nresub=raw_input('number of resub jobs? (all / number of my submissions on queue(int))')
     print(Nresub)
     if Nresub=='all':
         ANSWERED=1
@@ -563,7 +708,10 @@ while ANSWERED==0:
 
 
 
+##Get Nmyjob on queue
 
+Nmyjob=GetNJobs()
+print "##MY current njobs=",Nmyjob
 print "-sample py ="+sample_py
 exec open(sample_py).read()
 idx_resub=0
@@ -571,9 +719,17 @@ total_resub=0
 if Nresub=='all':
     total_resub=len(LIST_RESUB)
 else:
-    total_resub=int(Nresub)
+    total_resub=max(0,int(Nresub)-int(Nmyjob))
+
+print "Number of Resubmission===>",total_resub
+
+print "len(LIST_RESUB)=",len(LIST_RESUB)
+
+
 for a in LIST_RESUB:
-    
+
+    if idx_resub>=total_resub:
+        break    
     samplename=LIST_RESUB[a]['Sample']
     print a
     #print "@@samplename="+samplename
@@ -582,14 +738,18 @@ for a in LIST_RESUB:
         dascheck='dasgoclient -timeout 5 -query="file dataset='+Samples[samplename]['nanoAOD']+'"'
         print "....."
         status, output = commands.getstatusoutput(dascheck)
-        if not check_file_das(JOBDIR,a): 
+        pypath=JOBDIR+'/'+a+'.py'
+        
+        if not check_file_das(pypath): 
             LIST_FAIL_RESUB[a]={'Production':LIST_RESUB[a]['Production'], 'Step':LIST_RESUB[a]['Step'], 'Sample':LIST_RESUB[a]['Sample'],'part':LIST_RESUB[a]['part']}
-            idx_resub+=1
+            
             continue
     #if '/store' in output: ## if file exists->resubmit
         #print "output="+output
     curdir=os.getcwd()
+    
     os.chdir(JOBDIR)
+    
     os.system('rm '+a+'.err')
     os.system('rm '+a+'.out')
     os.system('rm '+a+'.log')
@@ -601,11 +761,11 @@ for a in LIST_RESUB:
     print resubmit
     os.system(resubmit)
     idx_resub+=1
-    if idx_resub==total_resub:
-        break
     os.chdir(curdir)
     
     print "--FIN.--"
+
+print "Total Resubmt Result=",idx_resub
 
 print "--RESUB FAIL--"
 for a in LIST_FAIL_RESUB:
