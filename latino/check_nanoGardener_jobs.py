@@ -67,17 +67,29 @@ if options.Nresub:
 
 ######preDefined functions######
 
-    
+        
+def GoToCPMode(pypath):
+    f=open(pypath,'r')
+    fnew=open(pypath+'_cpmode','w')
+    lines=f.readlines()
+    for line in lines:
+        if 'root://cms-xrdr.private.lo:2094' in line:
+            line=line.replace('root://cms-xrdr.private.lo:2094','/').replace('/xrd/','/xrootd/')
+        fnew.write(line)
+    f.close()
+    fnew.close()
+    os.system('cp '+pypath+'_cpmode'+' '+pypath)
 
 
 def CalcNSub(logpath):
-    f=open(logpath)
-    lines=f.readlines()
-    nsub=0
-    for line in lines:
-        if 'Job submitted from host' in line:
-            nsub+=1
-    f.close()
+    #f=open(logpath)
+    #lines=f.readlines()
+    #nsub=0
+    #for line in lines:
+    #    if 'Job submitted from host' in line:
+    #        nsub+=1
+    #f.close()
+    nsub=len(glob.glob(logpath+'*'))
     return nsub
     
     
@@ -411,16 +423,17 @@ for name in NAMES:
         
 
 
-        print "[jhchoi]mv done logs -> ",name
-        os.system('mv '+logpath+' '+JOBDIR+'/donelogs/ &> /dev/null')
-        os.system('mv '+pypath+' '+JOBDIR+'/donelogs/ &> /dev/null')
-        os.system('mv '+shpath+' '+JOBDIR+'/donelogs/ &> /dev/null')
-        os.system('mv '+jdspath+' '+JOBDIR+'/donelogs/ &> /dev/null')
-        os.system('mv '+errpath+' '+JOBDIR+'/donelogs/ &> /dev/null')
-        os.system('mv '+outpath+' '+JOBDIR+'/donelogs/ &> /dev/null')
-        os.system('mv '+jidpath+' '+JOBDIR+'/donelogs/ &> /dev/null')
-        os.system('mv '+donepath+' '+JOBDIR+'/donelogs/ &> /dev/null')
-
+        print "[jhchoi]mv done logs and remaing root files -> ",name
+        os.system('mv '+logpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        os.system('mv '+pypath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        os.system('mv '+shpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        os.system('mv '+jdspath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        os.system('mv '+errpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        os.system('mv '+outpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        os.system('mv '+jidpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        os.system('mv '+donepath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        rm_rfile='rm '+JOBDIR+'/'+'*'+Sample+'*'+part+'*.root'
+        os.system(rm_rfile)
     else:
         if os.path.isfile(errpath):
     
@@ -457,48 +470,74 @@ for name in NAMES:
         
         nsubmission=CalcNSub(logpath)
         if nsubmission>2:
+            print "NSUB=",nsubmission
             LIST_OVER2RESUB[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
-            os.system('touch '+logpath+str(nsubmission))
+            #os.system('touch '+logpath+str(nsubmission))
+            #os.system('cp '+errpath+' '+errpath+str(nsubmission))
+            #print "[jhchoi]Go To CPMode"
+            #GoToCPMode(pypath)
         jid=''
         if not os.path.isfile(jidpath): ##NOT submitted, need resubmission
+            print "No jid file. FAIL"
             LIST_FAIL[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
             continue
         f= open(jidpath)
         lines=f.readlines()
-
+        DRYRUN=False
         for line in lines:
             if 'job(s) submitted to cluster' in line:
                 jid=line.split('job(s) submitted to cluster')[1].strip()
                 njob=line.split('job(s) submitted to cluster')[0].strip()
+            if 'DO NOT SUBMIT! DRY RUN' in line: ##not started . need to force to start it
+                DRYRUN=True
         #print "[jhchoi]JOBDIR="+jid
         f.close()
         #print 'jid=',jid
-        if not CheckRunningJob(jid):
+        if DRYRUN:
+            print "DRYRUN!"
             TERMINATED=True
-
+            
         f= open(logpath)
         lines=f.readlines()
         
         for line in lines:
-            if 'Job terminated' in line and jid in line:TERMINATED=True
-            if 'Job was aborted by the user' in line and jid in line: TERMINATED=True
-            if 'Job disconnected, attempting to reconnect' in line and jid in line : ZOMBIE=True
+            if 'Job terminated' in line and jid in line:
+                print "[.log]Job terminated"
+                TERMINATED=True
+            if 'Job was aborted by the user' in line and jid in line: 
+                print "[.log]Job was aborted by the user"
+                TERMINATED=True
+            if 'Job disconnected, attempting to reconnect' in line and jid in line : 
+                print "[logZOMBIE]Job disconnected, attempting to reconnect"
+                ZOMBIE=True
         f.close()
         if not os.path.isfile(outpath): os.system('touch '+outpath)
         f=open(outpath)
         lines=f.readlines()
         for line in lines:
-            if 'file probably overwritten: stopping reporting error messages' in line : ZOMBIE=True
+            if 'file probably overwritten: stopping reporting error messages' in line : 
+                print "[out zombie]file probably overwritten: stopping reporting error messages"
+                ZOMBIE=True
             if 'Processed' in line and 'entries' in line and 'elapsed time' in line and 'kHz, avg speed' in line : STARTED=True
         f.close()
         if os.path.isfile(errpath):
             f=open(errpath)
             lines=f.readlines()
             for line in lines:
-                if 'Error in <TFile::WriteBuffer>' in line : ZOMBIE=True
-                if 'SysError in <TFile::ReadBuffer>: error reading from file' in line : ZOMBIE=True
-                if 'Error in <TBasket::Streamer>' in line : ZOMBIE=True
-                if 'There was a crash' in line : ZOMBIE=True
+                #if 'Error in <TFile::WriteBuffer>' in line : ZOMBIE=True
+                if 'SysError in <TFile::ReadBuffer>: error reading from file' in line : 
+                    print "[err ZOMBIE]SysError in <TFile::ReadBuffer>: error reading from file"
+                    ZOMBIE=True
+                #if 'Error in <TBasket::Streamer>' in line : ZOMBIE=True
+                if 'There was a crash' in line : 
+                    print "[err ZOMBIE]There was a crash"
+                    ZOMBIE=True
+                if 'Error in' in line: 
+                    print "[err zombie]Error in"
+                    ZOMBIE=True
+                if 'Error R__unzip_header' in line : 
+                    print "[err zombie]Error R__unzip_header"
+                    ZOMBIE=True
             f.close()
 
         if ZOMBIEINPUT : LIST_ZOMBIEINPUT[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
@@ -552,7 +591,9 @@ for a in LIST_ZOMBIE:
     #print "njob="+njob
     
     for i in range(int(njob)):
-        os.system('condor_rm '+jid+str(i) )
+        command='condor_rm '+jid+str(i)
+        print command
+        os.system(command )
     
 
 LIST_RESUB={}
@@ -579,6 +620,7 @@ for a in LIST_OVER2RESUB:
     print a
 
 LIST_RESUB_SAMPLENAME=list(set(LIST_RESUB_SAMPLENAME))
+print "----LIST RESUB SAMPLES---"
 for a in LIST_RESUB_SAMPLENAME:
     print a
 
@@ -630,7 +672,9 @@ if want_remove=='y':
         #print "njob="+njob                                                                                                                                                           
 
         for i in range(int(njob)):
-            os.system('condor_rm '+jid+str(i) )
+            command='condor_rm '+jid+str(i) 
+            print command
+            os.system(command)
 
 
 ANSWERED=0
@@ -692,7 +736,7 @@ Nresub='all'
 if options.Nresub:
     ANSWERED=1
     Nresub=options.Nresub
-    print 'number of resub jobs?->',Nresub 
+    print 'number of Max resub jobs?->',Nresub 
 while ANSWERED==0:
 
     Nresub=raw_input('number of resub jobs? (all / number of my submissions on queue(int))')
@@ -749,11 +793,11 @@ for a in LIST_RESUB:
     curdir=os.getcwd()
     
     os.chdir(JOBDIR)
-    
-    os.system('rm '+a+'.err')
-    os.system('rm '+a+'.out')
-    os.system('rm '+a+'.log')
-    os.system('rm '+a+'.jid')
+    idx=len(glob.glob(a+'.log*'))
+    os.system('mv '+a+'.err '+a+'.err_'+str(idx))
+    os.system('mv '+a+'.out '+a+'.out_'+str(idx))
+    os.system('mv '+a+'.log '+a+'.log_'+str(idx))
+    os.system('mv '+a+'.jid '+a+'.jid_'+str(idx))
 
     if want_modify_workdir=='y':
         change_workdir(a+'.sh')

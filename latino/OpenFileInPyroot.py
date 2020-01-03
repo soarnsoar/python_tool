@@ -21,13 +21,19 @@ def BoolGetEntries(myTree):
     #except ValueError:
     except AttributeError:
         boolean=False
+    except TypeError:
+        boolean=False
     return boolean
 
 def OpenFileInPyroot(INPUT):
     
     #print INPUT
     INPUT=ConvertPath(INPUT)
+    
+    
     f=ROOT.TFile(INPUT,'READ')
+    
+    
     #print "bool(f.IsZombie())",bool(f.IsZombie())
     IsZombie=bool(f.IsZombie())
     myTree=f.Get("Runs")

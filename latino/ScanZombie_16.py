@@ -30,7 +30,7 @@ print "---zombie--"
 print len(ZOMBIE_LIST),'/',len(files)
 for a in ZOMBIE_LIST:
     print a
-    txt.write(a)
+    txt.write(a+'\n')
 
 txt.close()
 
