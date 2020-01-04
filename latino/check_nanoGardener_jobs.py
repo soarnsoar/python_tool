@@ -504,12 +504,15 @@ for name in NAMES:
             if 'Job terminated' in line and jid in line:
                 print "[.log]Job terminated"
                 TERMINATED=True
+                break
             if 'Job was aborted by the user' in line and jid in line: 
                 print "[.log]Job was aborted by the user"
                 TERMINATED=True
+                break
             if 'Job disconnected, attempting to reconnect' in line and jid in line : 
                 print "[logZOMBIE]Job disconnected, attempting to reconnect"
                 ZOMBIE=True
+                break
         f.close()
         if not os.path.isfile(outpath): os.system('touch '+outpath)
         f=open(outpath)
@@ -518,6 +521,7 @@ for name in NAMES:
             if 'file probably overwritten: stopping reporting error messages' in line : 
                 print "[out zombie]file probably overwritten: stopping reporting error messages"
                 ZOMBIE=True
+                break
             if 'Processed' in line and 'entries' in line and 'elapsed time' in line and 'kHz, avg speed' in line : STARTED=True
         f.close()
         if os.path.isfile(errpath):
@@ -528,16 +532,20 @@ for name in NAMES:
                 if 'SysError in <TFile::ReadBuffer>: error reading from file' in line : 
                     print "[err ZOMBIE]SysError in <TFile::ReadBuffer>: error reading from file"
                     ZOMBIE=True
+                    break
                 #if 'Error in <TBasket::Streamer>' in line : ZOMBIE=True
                 if 'There was a crash' in line : 
                     print "[err ZOMBIE]There was a crash"
                     ZOMBIE=True
+                    break
                 if 'Error in' in line: 
                     print "[err zombie]Error in"
                     ZOMBIE=True
+                    break
                 if 'Error R__unzip_header' in line : 
                     print "[err zombie]Error R__unzip_header"
                     ZOMBIE=True
+                    break
             f.close()
 
         if ZOMBIEINPUT : LIST_ZOMBIEINPUT[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
