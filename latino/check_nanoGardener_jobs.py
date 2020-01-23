@@ -204,6 +204,8 @@ def CheckInputZombie(pypath):
     f.close()
     exec(LinesToRead)
     for s in sourceFiles:
+        if 'cms-xrd-global.cern.ch' in s:
+            continue
         isvalid=TFileOpen(s)
         if not isvalid:
             print '[ZOMBIE]',ConvertXROOTDpath(s)
