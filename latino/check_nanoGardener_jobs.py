@@ -9,6 +9,7 @@ from CheckRunningJob import CheckRunningJob
 import optparse
 from LatinoAnalysis.Tools.userConfig  import *
 
+print "====Start check_nanoGardener_jobs.py===="
 #JOB_DIR_SPLIT = ( jobDirSplit == True )
 JOB_DIR_SPLIT=False
 
@@ -66,7 +67,7 @@ if options.Nresub:
 #    cleanjob=True
 
 ######preDefined functions######
-
+print "===predefine functions==="
         
 def GoToCPMode(pypath):
     f=open(pypath,'r')
@@ -210,7 +211,7 @@ def CheckInputZombie(pypath):
             
     return output
 ######END:preDefined functions######
-
+print "===end of predefine functions==="
 
 
 JOBDIR=sys.argv[1]
@@ -337,11 +338,12 @@ for name in NAMES:
 
     if os.path.isfile(filepath) :
         if os.stat(filepath).st_size == 0 or not TFileOpen(filepath):
+            print "0 size file OR Zombie!!!-->"+filepath
             if USER=='jhchoi':
                 os.system('rm '+filepath.replace('/xrootd/store/user/jhchoi/','/xrootd_user/jhchoi/xrootd/'))
             else:
                 os.system('xrdfs root://cms-xrdr.private.lo:2094 rm '+filepath.replace('/xrootd/','//xrd/'))
-            print "0 size file!!!-->"+filepath
+            
 
 
 
@@ -424,16 +426,36 @@ for name in NAMES:
 
 
         print "[jhchoi]mv done logs and remaing root files -> ",name
-        os.system('mv '+logpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
-        os.system('mv '+pypath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
-        os.system('mv '+shpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
-        os.system('mv '+jdspath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
-        os.system('mv '+errpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
-        os.system('mv '+outpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
-        os.system('mv '+jidpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
-        os.system('mv '+donepath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
-        rm_rfile='rm '+JOBDIR+'/'+'*'+Sample+'*'+part+'*.root'
-        os.system(rm_rfile)
+        #os.system('mv '+logpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        print 'mv '+logpath+'* '+JOBDIR+'/donelogs/'
+        os.system('mv '+logpath+'* '+JOBDIR+'/donelogs/')
+        #os.system('mv '+pypath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        print 'mv '+pypath+'* '+JOBDIR+'/donelogs/'
+        os.system('mv '+pypath+'* '+JOBDIR+'/donelogs/')
+        print 'mv '+shpath+'* '+JOBDIR+'/donelogs/'
+        #os.system('mv '+shpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        os.system('mv '+shpath+'* '+JOBDIR+'/donelogs/')
+        #os.system('mv '+jdspath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        print 'mv '+jdspath+'* '+JOBDIR+'/donelogs/'
+        os.system('mv '+jdspath+'* '+JOBDIR+'/donelogs/')
+        #os.system('mv '+errpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        print 'mv '+errpath+'* '+JOBDIR+'/donelogs/'
+        os.system('mv '+errpath+'* '+JOBDIR+'/donelogs/')
+        #os.system('mv '+outpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        print 'mv '+outpath+'* '+JOBDIR+'/donelogs/'
+        os.system('mv '+outpath+'* '+JOBDIR+'/donelogs/')
+        #os.system('mv '+jidpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        print 'mv '+jidpath+'* '+JOBDIR+'/donelogs/'
+        os.system('mv '+jidpath+'* '+JOBDIR+'/donelogs/')
+        #os.system('mv '+donepath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
+        print 'mv '+donepath+'* '+JOBDIR+'/donelogs/'
+        os.system('mv '+donepath+'* '+JOBDIR+'/donelogs/')
+        #os.system('mv '+JOBDIR+'/'+'*'+Sample+'*'+part+'*.root '+JOBDIR+'/donelogs &> /dev/null')
+        print 'mv '+JOBDIR+'/'+'*'+Sample+'*'+part+'*.root '+JOBDIR+'/donelogs/'
+        os.system('mv '+JOBDIR+'/'+'*'+Sample+'*'+part+'*.root '+JOBDIR+'/donelogs/')
+        #rm_rfile='rm '+JOBDIR+'/'+'*'+Sample+'*'+part+'*.root'
+        #os.system(rm_rfile)
+        print "[jhchoi]mv done logs and remaing root files [DONE]"
     else:
         if os.path.isfile(errpath):
     
@@ -544,6 +566,10 @@ for name in NAMES:
                     break
                 if 'Error R__unzip_header' in line : 
                     print "[err zombie]Error R__unzip_header"
+                    ZOMBIE=True
+                    break
+                if '[ERROR]' in line:
+                    print "[err zombie] [ERROR]flag"
                     ZOMBIE=True
                     break
             f.close()
