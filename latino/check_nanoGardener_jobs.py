@@ -146,7 +146,7 @@ def change_workdir(shfile):
     os.system('mv '+shfile+'_new'+' '+shfile)
     os.system('chmod u+x '+shfile)
         
-def ConvertXROOTDpath(filepath):
+def ConvertXROOTDUSERpath(filepath):
     if "root://cms-xrdr.private.lo:2094" in filepath:
 
         filepath=filepath.split('/xrd/')[1]
@@ -155,13 +155,41 @@ def ConvertXROOTDpath(filepath):
 
     return filepath
 
-def TFileOpen(filepath):
-    filepath=ConvertXROOTDpath(filepath)
+'''
+def ConvertXROOTDpath(filepath):
+    if "root://cms-xrdr.private.lo:2094" in filepath:
 
+        filepath=filepath.split('/xrd/')[1]
+        filepath='/xrootd/'+filepath
+        filepath=filepath.replace('//','/').replace('/xrootd/store/user/jhchoi/Latino/HWWNano/','/xrootd_user/jhchoi/xrootd/Latino/HWWNano/')
+
+    return filepath
+'''
+
+def ConvertToXROOTDpath(filepath):
+    if "root://cms-xrdr.private.lo:2094" in filepath:
+        return filepath
+
+
+
+    if "/xrootd_user/jhchoi/xrootd/Latino/HWWNano/" in filepath:
+
+        filepath=filepath.replace('//','/').replace('/xrootd_user/jhchoi/xrootd/Latino/HWWNano/','root://cms-xrdr.private.lo:2094///xrd/store/user/jhchoi/Latino/HWWNano/')
+    elif "/xrootd/store/user/jhchoi/Latino/HWWNano/" in filepath:
+        filepath=filepath.replace('//','/').replace('/xrootd/store/user/jhchoi/Latino/HWWNano/','root://cms-xrdr.private.lo:2094///xrd/store/user/jhchoi/Latino/HWWNano/')
+    return filepath
+
+def TFileOpen(filepath):
+    #filepath=ConvertXROOTDpath(filepath)
+    
+    filepath=ConvertToXROOTDpath(filepath)
+    #print "[filepath in TFileOpen]",filepath
     ##if the file not exist
-    if not os.path.isfile(filepath):return False
+    #if not os.path.isfile(filepath):return False
+    
     #print filepath
-    f=ROOT.TFile(filepath,'READ')
+    f=ROOT.TFile.Open(filepath,'READ')
+    if not bool(f):return False
     IsZombie=bool(f.IsZombie())
     myTree=f.Get("Runs")
 
@@ -206,9 +234,9 @@ def CheckInputZombie(pypath):
     for s in sourceFiles:
         if 'cms-xrd-global.cern.ch' in s:
             continue
-        isvalid=TFileOpen(s)
+        isvalid=TFileOpen(ConvertToXROOTDpath(s))
         if not isvalid:
-            print '[ZOMBIE]',ConvertXROOTDpath(s)
+            print '[ZOMBIEInput]',ConvertToXROOTDpath(s)
             output=True
             
     return output
@@ -245,20 +273,34 @@ else :
 Latino_sampleFile=''
 if 'Summer16_102X_nAODv4' in JOBDIR:
     Latino_sampleFile='Summer16_102X_nAODv4.py'
+elif 'Summer16_102X_nAODv5' in JOBDIR:
+    Latino_sampleFile='Summer16_102X_nAODv5.py'
 elif 'Run2016_102X_nAODv4' in JOBDIR:
     Latino_sampleFile='Run2016_102X_nAODv4.py'
+elif 'Run2016_102X_nAODv5' in JOBDIR:
+    Latino_sampleFile='Run2016_102X_nAODv5.py'
 elif 'Fall2017_102X_nAODv4' in JOBDIR:
     Latino_sampleFile='fall17_102X_nAODv4.py'
+elif 'Fall2017_102X_nAODv5' in JOBDIR:
+    Latino_sampleFile='fall17_102X_nAODv5.py'
+elif 'Fall2017_102X_nAODv5' in JOBDIR:
+    Latino_sampleFile='fall17_102X_nAODv5.py'
 elif 'Run2017_102X_nAODv4' in JOBDIR:
     Latino_sampleFile='Run2017_102X_nAODv4.py'
+elif 'Run2017_102X_nAODv5' in JOBDIR:
+    Latino_sampleFile='Run2017_102X_nAODv5.py'
 elif 'NanoGardening__Run2018_102X_nAODv4_14Dec' in JOBDIR:
     Latino_sampleFile='Run2018_102X_nAODv4_14Dec2018.py'
 elif 'NanoGardening__Autumn18_102X_nAODv4_GTv16' in JOBDIR:
     Latino_sampleFile='Autumn18_102X_nAODv4_v16.py'
 elif 'NanoGardening__Autumn18_102X_nAODv5_Full2018v5' in JOBDIR:
     Latino_sampleFile='Autumn18_102X_nAODv5.py'
+elif 'NanoGardening__Autumn18_102X_nAODv6_Full2018v6' in JOBDIR:
+    Latino_sampleFile='Autumn18_102X_nAODv6.py'
 elif 'NanoGardening__Run2018_102X_nAODv5_Full2018v5' in JOBDIR:
     Latino_sampleFile='Run2018_102X_nAODv5.py'
+elif 'NanoGardening__Run2018_102X_nAODv6_Full2018v6' in JOBDIR:
+    Latino_sampleFile='Run2018_102X_nAODv6.py'
 if Latino_sampleFile=='': 
     print "!!None matched sample python in Latino path!!"
     exit()
@@ -338,13 +380,13 @@ for name in NAMES:
     else:
         filepath=TREEDIR+'/'+Production+"/"+input_s+"__"+Step+"/"+"nanoLatino_"+Sample+"__"+part+".root"
 
-    if os.path.isfile(filepath) :
-        if os.stat(filepath).st_size == 0 or not TFileOpen(filepath):
-            print "0 size file OR Zombie!!!-->"+filepath
-            if USER=='jhchoi':
-                os.system('rm '+filepath.replace('/xrootd/store/user/jhchoi/','/xrootd_user/jhchoi/xrootd/'))
-            else:
-                os.system('xrdfs root://cms-xrdr.private.lo:2094 rm '+filepath.replace('/xrootd/','//xrd/'))
+    #if os.path.isfile(filepath) :
+    if not TFileOpen(filepath):
+        print "0 size file OR Zombie!!!-->"+filepath
+        #if USER=='jhchoi':
+        #    os.system('rm '+filepath.replace('/xrootd/store/user/jhchoi/','/xrootd_user/jhchoi/xrootd/'))
+        #else:
+        os.system('xrdfs root://cms-xrdr.private.lo:2094 rm '+ConvertToXROOTDpath(filepath).replace('root://cms-xrdr.private.lo:2094',''))
             
 
 
@@ -394,15 +436,13 @@ for name in NAMES:
         filepath=TREEDIR+'/'+Production+"/"+Step+"/"+"nanoLatino_"+Sample+"__"+part+".root"
     else:
         filepath=TREEDIR+'/'+Production+"/"+input_s+"__"+Step+"/"+"nanoLatino_"+Sample+"__"+part+".root"
+    
+    if not TFileOpen(filepath):
+        print "0 size file OR Zombie!!!-->"+filepath
+        os.system('xrdfs root://cms-xrdr.private.lo:2094 rm '+ConvertToXROOTDpath(filepath).replace('root://cms-xrdr.private.lo:2094',''))
 
-    if os.path.isfile(filepath):
-        if os.stat(filepath).st_size == 0:
-            print "rm 0 size file!!!-->"+filepath
-            if USER=='jhchoi':
-                os.system('rm '+filepath.replace('/xrootd/store/user/jhchoi/','/xrootd_user/jhchoi/xrootd/'))
-            else:
-                os.system('xrdfs root://cms-xrdr.private.lo:2094 rm '+filepath.replace('/xrootd/','//xrd/'))
-            #print "0 size file!!!-->"+filepath
+        
+       
 
 
 
