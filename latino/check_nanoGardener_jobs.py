@@ -189,7 +189,9 @@ def TFileOpen(filepath):
     
     #print filepath
     f=ROOT.TFile.Open(filepath,'READ')
-    if not bool(f):return False
+    if not bool(f):
+        print filepath,'cannot be opened'
+        return False
     IsZombie=bool(f.IsZombie())
     myTree=f.Get("Runs")
 
