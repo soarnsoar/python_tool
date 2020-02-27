@@ -76,7 +76,7 @@ for form1 in FORMATS:
         NAMES+=sumlist
 HASMISSING=list(set(HASMISSING))
 NAMES=list(set(NAMES))
-
+print len(HASMISSING),"/",len(NAMES)
 print "--need to check following jobs--"
 for a in HASMISSING:
     print a

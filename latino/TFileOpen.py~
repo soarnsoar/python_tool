@@ -1,0 +1,31 @@
+import ROOT
+
+
+def TFileOpen(filepath):
+    #filepath=ConvertXROOTDpath(filepath)                                                                                                                                         
+
+    filepath=ConvertToXROOTDpath(filepath)
+    #print "[filepath in TFileOpen]",filepath                                                                                                                                     
+    ##if the file not exist                                                                                                                                                       
+    #if not os.path.isfile(filepath):return False                                                                                                                                 
+
+    #print filepath                                                                                                                                                               
+    f=ROOT.TFile.Open(filepath,'READ')
+    if not bool(f):
+        print filepath,'cannot be opened'
+        return False
+    IsZombie=bool(f.IsZombie())
+    myTree=f.Get("Runs")
+
+    try:
+        boolean=bool(myTree.GetEntries())
+    except AttributeError:
+        boolean=False
+
+
+    f.Close()
+
+    del myTree
+    del f
+
+    return boolean and not IsZombie
