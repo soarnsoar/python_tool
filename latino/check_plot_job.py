@@ -34,6 +34,54 @@ def parse_name(name):
 
     return info
 
+def HasSocketError(errfile):
+    if not os.path.isfile(errfile):
+        
+        return False
+    f=open(errfile)
+    lines=f.readlines()
+    isFail=False
+    for line in lines:
+        if '[ERROR]' in line: 
+            isFail=True
+            break
+    f.close()
+    return isFail
+
+def isTerminated(logfile,jid):##005 (3294050.000.000) 02/28 18:31:21 Job terminated.
+    f=open(logfile)
+    lines=f.readlines()
+    isTerminated=False
+    
+    for line in lines:
+        if 'Job terminated' in line and str(jid) in line:
+            isTerminated=True
+            break
+    f.close()
+    
+    return isTerminated
+
+def GetJid(jidfile):
+    
+    if not os.path.isfile(jidfile):
+        jidfile=jidfile.replace('.jid','.done')
+    if not os.path.isfile(jidfile):
+        #print "Fail to Get jid of",jidfile
+        return False
+    f=open(jidfile)
+    lines=f.readlines()##1 job(s) submitted to cluster 3294050.
+    jid=False
+    for line in lines:
+        if "submitted to cluster" in line:
+            
+            jid=line.split('job(s) submitted to cluster')[1].replace('.','')
+            
+            jid=int(jid)
+            break
+
+    f.close()
+    return jid
+
 ######END:preDefined functions######
 
 
@@ -76,46 +124,102 @@ for form1 in FORMATS:
         NAMES+=sumlist
 HASMISSING=list(set(HASMISSING))
 NAMES=list(set(NAMES))
-print len(HASMISSING),"/",len(NAMES)
-print "--need to check following jobs--"
-for a in HASMISSING:
+
+
+
+##--Check logfiles---##
+FAILS=[]
+NOT_FINISHED=[]
+SUCCESS=[]
+NOT_STARTED=[]
+for name in NAMES:
+    
+    jid=GetJid(name+'.jid')
+    if not jid:
+        NOT_STARTED.append(name)
+        continue
+    IsFail=HasSocketError(name+'.err')
+    
+    IsTerminated=isTerminated(name+'.log',jid)
+    if IsFail : FAILS.append(name)
+    if not IsTerminated: NOT_FINISHED.append(name)
+    if IsTerminated and not IsFail:SUCCESS.append(name)
+
+
+print "---success--"
+print len(SUCCESS),"/",len(NAMES)
+
+print "--running  jobs--"
+#print len(HASMISSING),"/",len(NAMES)
+#for a in HASMISSING:
+
+print len(NOT_FINISHED),"/",len(NAMES)
+for a in NOT_FINISHED:
+    print a
+
+print "--not started  jobs--"
+#print len(HASMISSING),"/",len(NAMES)
+#for a in HASMISSING:
+
+print len(NOT_STARTED),"/",len(NAMES)
+for a in NOT_STARTED:
+    print a
+
+print "--fail with error--"
+print len(FAILS),"/",len(NAMES)
+for a in FAILS:
     print a
 
 
 
-
+RESUB=[]
 
 ANSWERED=0
 want_remove='n'
 while ANSWERED==0:
-    want_remove=raw_input('want to remove jobs? (y/n)')
+    want_remove=raw_input('want to remove not finished jobs? (y/n)')
     print(want_remove)
     if want_remove=='y' or want_remove=='n':
         ANSWERED=1
-
-
-if want_remove=='n':
-    exit()
+        if want_remove=='y':
+            FAILS=list(set(FAILS+NOT_FINISHED))
+    
 
 
 ANSWERED=0
-want_resub='n'
+want_resub_notstarted='n'
 while ANSWERED==0:
-    want_resub=raw_input('want to resubmit using condor_submit? (y/n)')
-    print(want_resub)
-    if want_resub=='y' or want_resub=='n':
+    want_resub_notstarted=raw_input('want to resubmit not started jobs using condor_submit? (y/n)')
+    print(want_resub_notstarted)
+    if want_resub_notstarted=='y' or want_resub_notstarted=='n':
         ANSWERED=1
+        if want_resub_notstarted=='y':
+            RESUB=RESUB+NOT_STARTED
+            #want_resub='y'
+
+
+ANSWERED=0
+want_resub_fail='n'
+while ANSWERED==0:
+    want_resub_fail=raw_input('want to resubmit failed jobs using condor_submit? (y/n)')
+    print(want_resub_fail)
+    if want_resub_fail=='y' or want_resub_fail=='n':
+        ANSWERED=1
+        if want_resub_fail=='y' :
+            RESUB=RESUB+FAILS
+            #want_resub='y'
+
 
 
 #if want_resub=='n':
 #    exit()
 
+#if want_remove=='n':
+#    exit()
 
 
-for a in HASMISSING:
-    a=a.split('/')[-1]
-    if not os.path.isfile(JOBDIR+'/'+a+'.jid'): continue
-    f=open(JOBDIR+'/'+a+'.jid')
+def do_condor_rm(jidfile):
+    f=open(jidfile)
     lines=f.readlines()
     jid=''
     njob=''
@@ -124,30 +228,47 @@ for a in HASMISSING:
             jid=line.split('job(s) submitted to cluster')[1].strip()
             njob=line.split('job(s) submitted to cluster')[0].strip()
 
+    f.close()
     if jid=='': 
         print "!!Fail to get jobid of "+a
-        continue
-    #print 'jobid='+jid                                                                                                                                                           
-    #print "njob="+njob                                                                                                                                                           
+        return False
+    
+
+
 
     for i in range(int(njob)):
  
         os.system('condor_rm '+jid+str(i) )
+        #print "condor_rm ",jid+'.'+str(i)
+print "nFAILS=",len(FAILS)
 
+for a in FAILS:
+    RemoveJob=True
+    
+    a=a.split('/')[-1]
+    jidfile=JOBDIR+'/'+a+'.jid'
+    if not os.path.isfile(jidfile):
+        jidfile=jidfile.replace('.jid','.done')
+    if not os.path.isfile(jidfile):
+        RemoveJob=False
+    
+    if RemoveJob:do_condor_rm(jidfile)
 
-
+print "RESUB=",len(RESUB)
+for a in RESUB:
+    a=a.split('/')[-1]
 
     curdir=os.getcwd()
     os.chdir(JOBDIR)
-    os.system('rm '+a+'.err')
-    os.system('rm '+a+'.out')
-    os.system('rm '+a+'.log')
-    if os.path.isfile(a+'.jid'):
-        os.system('rm '+a+'.jid')
+    if os.path.isfile(a+'.err'):  os.system('rm '+a+'.err')
+    if os.path.isfile(a+'.out'):  os.system('rm '+a+'.out')
+    if os.path.isfile(a+'.log'):  os.system('rm '+a+'.log')
+    if os.path.isfile(a+'.done'): os.system('rm '+a+'.done')
+    if os.path.isfile(a+'.jid'):  os.system('rm '+a+'.jid')
     resubmit='condor_submit '+a+'.jds > '+a+'.jid'
     
-    if want_resub == 'y' :
-        print resubmit
-        os.system(resubmit)
+
+    print resubmit
+    os.system(resubmit)
     os.chdir(curdir)
 

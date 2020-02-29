@@ -39,8 +39,11 @@ def GetEndTime(line):
 
 mydir=sys.argv[1] 
 print "dir=",mydir
+key=''
+if len(sys.argv)>2:
+    key=sys.argv[2]+'*'
 
-loglist=glob.glob(mydir+'/*.log')
+loglist=glob.glob(mydir+'/*'+key+'.log')
 print 'N log file=',len(loglist)
 
 MaxRuntime=-1
