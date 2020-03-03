@@ -4,6 +4,14 @@ import commands
 import ROOT
 import sys
 
+
+
+
+CheckSocketErrorOpen=True
+CheckSocketErrorClose=False
+
+
+
 ######preDefined functions######
 def check_file_das(JOBDIR,jobname):
     f=open(JOBDIR+'/'+jobname+'.py','r')
@@ -42,9 +50,15 @@ def HasSocketError(errfile):
     lines=f.readlines()
     isFail=False
     for line in lines:
-        if '[ERROR]' in line: 
-            isFail=True
-            break
+        if 'Error in <TNetXNGFile::Open>: [ERROR]' in line: 
+            if CheckSocketErrorOpen: 
+                isFail=True
+                print "socket error->",errfile
+                break
+        if 'Error in <TNetXNGFile::Close>: [ERROR]' in line:
+            if CheckSocketErrorClose: 
+                isFail=True
+                break
     f.close()
     return isFail
 
@@ -55,6 +69,9 @@ def isTerminated(logfile,jid):##005 (3294050.000.000) 02/28 18:31:21 Job termina
     
     for line in lines:
         if 'Job terminated' in line and str(jid) in line:
+            isTerminated=True
+            break
+        if 'Job was aborted by the user' in line and str(jid) in line:
             isTerminated=True
             break
     f.close()
