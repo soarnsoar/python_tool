@@ -50,12 +50,12 @@ def HasSocketError(errfile):
     lines=f.readlines()
     isFail=False
     for line in lines:
-        if 'Error in <TNetXNGFile::Open>: [ERROR]' in line: 
+        if 'Error' in line and '<TNetXNGFile::Open>' in line: 
             if CheckSocketErrorOpen: 
                 isFail=True
                 print "socket error->",errfile
                 break
-        if 'Error in <TNetXNGFile::Close>: [ERROR]' in line:
+        if 'Error' in line and '<TNetXNGFile::Close>' in line:
             if CheckSocketErrorClose: 
                 isFail=True
                 break
