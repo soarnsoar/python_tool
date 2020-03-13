@@ -149,8 +149,12 @@ FAILS=[]
 NOT_FINISHED=[]
 SUCCESS=[]
 NOT_STARTED=[]
+NO_DONEFILE=[]
 for name in NAMES:
-    
+
+    if not os.path.isfile(name+'.done'):
+        NO_DONEFILE.append(name)
+
     jid=GetJid(name+'.jid')
     if not jid:
         NOT_STARTED.append(name)
@@ -180,6 +184,11 @@ print "--not started  jobs--"
 
 print len(NOT_STARTED),"/",len(NAMES)
 for a in NOT_STARTED:
+    print a
+
+print "---no DoneFile---"
+print len(NO_DONEFILE),"/",len(NAMES)
+for a in NO_DONEFILE:
     print a
 
 print "--fail with error--"
