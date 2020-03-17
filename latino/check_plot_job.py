@@ -50,12 +50,12 @@ def HasSocketError(errfile):
     lines=f.readlines()
     isFail=False
     for line in lines:
-        if 'Error in <TNetXNGFile::Open>: [ERROR]' in line: 
+        if 'Error' in line and '<TNetXNGFile::Open>' in line: 
             if CheckSocketErrorOpen: 
                 isFail=True
                 print "socket error->",errfile
                 break
-        if 'Error in <TNetXNGFile::Close>: [ERROR]' in line:
+        if 'Error' in line and '<TNetXNGFile::Close>' in line:
             if CheckSocketErrorClose: 
                 isFail=True
                 break
@@ -149,8 +149,12 @@ FAILS=[]
 NOT_FINISHED=[]
 SUCCESS=[]
 NOT_STARTED=[]
+NO_DONEFILE=[]
 for name in NAMES:
-    
+
+    if not os.path.isfile(name+'.done'):
+        NO_DONEFILE.append(name)
+
     jid=GetJid(name+'.jid')
     if not jid:
         NOT_STARTED.append(name)
@@ -180,6 +184,11 @@ print "--not started  jobs--"
 
 print len(NOT_STARTED),"/",len(NAMES)
 for a in NOT_STARTED:
+    print a
+
+print "---no DoneFile---"
+print len(NO_DONEFILE),"/",len(NAMES)
+for a in NO_DONEFILE:
     print a
 
 print "--fail with error--"
