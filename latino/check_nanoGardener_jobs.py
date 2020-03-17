@@ -667,7 +667,7 @@ for a in LIST_ZOMBIE:
             if jid=='': print "!!Fail to get jobid of "+a
     #print 'jobid='+jid
     #print "njob="+njob
-    
+    if njob=='':continue
     for i in range(int(njob)):
         command='condor_rm '+jid+str(i)
         print command
