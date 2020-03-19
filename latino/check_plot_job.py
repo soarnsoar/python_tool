@@ -151,7 +151,7 @@ SUCCESS=[]
 NOT_STARTED=[]
 NO_DONEFILE=[]
 for name in NAMES:
-
+    print "##--Running",name
     if not os.path.isfile(name+'.done'):
         NO_DONEFILE.append(name)
 
@@ -221,6 +221,17 @@ while ANSWERED==0:
         ANSWERED=1
         if want_resub_notstarted=='y':
             RESUB=RESUB+NOT_STARTED
+            #want_resub='y'
+
+ANSWERED=0
+want_resub_noDone='n'
+while ANSWERED==0:
+    want_resub_notstarted=raw_input('want to resubmit  jobs without donefile using condor_submit? (y/n)')
+    print(want_resub_notstarted)
+    if want_resub_noDone=='y' or want_resub_noDone=='n':
+        ANSWERED=1
+        if want_resub_noDone=='y':
+            RESUB=RESUB+NO_DONEFILE
             #want_resub='y'
 
 
