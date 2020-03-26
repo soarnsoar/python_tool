@@ -8,7 +8,14 @@ from GetNJobs import GetNJobs
 from CheckRunningJob import CheckRunningJob
 import optparse
 from LatinoAnalysis.Tools.userConfig  import *
-
+scriptpath=os.path.realpath(__file__)
+scriptpath=scriptpath.split(sys.argv[0].split('/')[-1])[0]
+print 'scriptpath=',scriptpath
+sys.path.insert(0, scriptpath+"../")
+from CalMemoryUsage_condor import CalcMemory ##input = logpath+<logfile>.log
+from AddRequestMemory import AddRequestMemory
+from datetime import datetime
+from LastModifiedTime import LastModifiedTime
 print "====Start check_nanoGardener_jobs.py===="
 #JOB_DIR_SPLIT = ( jobDirSplit == True )
 JOB_DIR_SPLIT=False
@@ -68,6 +75,31 @@ if options.Nresub:
 
 ######preDefined functions######
 print "===predefine functions==="
+#myfile="root://cms-xrdr.private.lo:2094///xrd/store/user/jhchoi/Latino/HWWNano//Fall2017_102X_nAODv5_Full2017v6/MCl1loose2017v6__MCCorr2017v6__HMSemilepSkimJH2017v6/nanoLatino_GluGluHToWWToLNuQQ_M1500__part0.root"
+def CheckFileSize(myfile):
+    f=ROOT.TFile.Open(myfile)
+    Size=f.GetSize()/1024/1024
+    #print Size
+    f.Close()
+    return Size
+
+
+def GetUpdateTime(line):
+    #001 (3287776.000.000) 02/27 19:00:23 Job executing on host: <134.75.125.44:9618?addrs=134.75.125.44-9618+[2001-320-15-125-ca1f-66ff-fedb-5db9]-9618&noUDP&sock=25149_b35f_6>
+    MMDDhhmmss=line.split('Image size of job updated')[0].split(')')[1] ##02/27 19:00:23
+    MMDDhhmmss=MMDDhhmmss.strip().split(' ')##['02/27', '19:00:23']
+    MMDD=MMDDhhmmss[0]##02/27 
+    MM=int(MMDD.split('/')[0])
+    DD=int(MMDD.split('/')[1])
+    hhmmss=MMDDhhmmss[1]
+    hh=int(hhmmss.split(':')[0])
+    mm=int(hhmmss.split(':')[1])
+    ss=int(hhmmss.split(':')[2])
+
+
+    this_datetime=datetime(2000,MM,DD,hh,mm,ss)
+    return this_datetime
+
         
 def GoToCPMode(pypath):
     f=open(pypath,'r')
@@ -232,16 +264,37 @@ def CheckInputZombie(pypath):
 
 
     f.close()
+    
+
+    FullSize=0
     exec(LinesToRead)
     for s in sourceFiles:
         if 'cms-xrd-global.cern.ch' in s:
             continue
+
+        this_size=CheckFileSize(s)
+        FullSize=float(this_size)
         isvalid=TFileOpen(ConvertToXROOTDpath(s))
         if not isvalid:
             print '[ZOMBIEInput]',ConvertToXROOTDpath(s)
             output=True
-            
-    return output
+    #FullSize
+    return output,FullSize
+
+#def AddRequestMemory(jds,memory):
+#    ToAdd='request_memory = '+str(int(memory))+'MB \n'
+#    f=open(jds,'r')
+#    fnew=open(jds+'_new','w')
+
+#    lines=f.readlines()
+#    for line in lines:
+#        if 'queue' in line:
+#            fnew.write(ToAdd)
+#        fnew.write(line)
+
+#    f.close()
+#    fnew.close()
+#    os.system('rm '+jds+'_new')
 ######END:preDefined functions######
 print "===end of predefine functions==="
 
@@ -472,31 +525,31 @@ for name in NAMES:
         print "[jhchoi]mv done logs and remaing root files -> ",name
         #os.system('mv '+logpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
         print 'mv '+logpath+'* '+JOBDIR+'/donelogs/'
-        os.system('mv '+logpath+'* '+JOBDIR+'/donelogs/')
+        if os.path.isfile(logpath) : os.system('mv '+logpath+'* '+JOBDIR+'/donelogs/')
         #os.system('mv '+pypath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
         print 'mv '+pypath+'* '+JOBDIR+'/donelogs/'
-        os.system('mv '+pypath+'* '+JOBDIR+'/donelogs/')
+        if os.path.isfile(pypath) :os.system('mv '+pypath+'* '+JOBDIR+'/donelogs/')
         print 'mv '+shpath+'* '+JOBDIR+'/donelogs/'
         #os.system('mv '+shpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
-        os.system('mv '+shpath+'* '+JOBDIR+'/donelogs/')
+        if os.path.isfile(shpath) :os.system('mv '+shpath+'* '+JOBDIR+'/donelogs/')
         #os.system('mv '+jdspath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
         print 'mv '+jdspath+'* '+JOBDIR+'/donelogs/'
-        os.system('mv '+jdspath+'* '+JOBDIR+'/donelogs/')
+        if os.path.isfile(jdspath) :os.system('mv '+jdspath+'* '+JOBDIR+'/donelogs/')
         #os.system('mv '+errpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
         print 'mv '+errpath+'* '+JOBDIR+'/donelogs/'
-        os.system('mv '+errpath+'* '+JOBDIR+'/donelogs/')
+        if os.path.isfile(errpath) :os.system('mv '+errpath+'* '+JOBDIR+'/donelogs/')
         #os.system('mv '+outpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
         print 'mv '+outpath+'* '+JOBDIR+'/donelogs/'
-        os.system('mv '+outpath+'* '+JOBDIR+'/donelogs/')
+        if os.path.isfile(outpath) :os.system('mv '+outpath+'* '+JOBDIR+'/donelogs/')
         #os.system('mv '+jidpath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
         print 'mv '+jidpath+'* '+JOBDIR+'/donelogs/'
-        os.system('mv '+jidpath+'* '+JOBDIR+'/donelogs/')
+        if os.path.isfile(jidpath) :os.system('mv '+jidpath+'* '+JOBDIR+'/donelogs/')
         #os.system('mv '+donepath+'* '+JOBDIR+'/donelogs/ &> /dev/null')
         print 'mv '+donepath+'* '+JOBDIR+'/donelogs/'
-        os.system('mv '+donepath+'* '+JOBDIR+'/donelogs/')
+        if os.path.isfile(donepath) :os.system('mv '+donepath+'* '+JOBDIR+'/donelogs/')
         #os.system('mv '+JOBDIR+'/'+'*'+Sample+'*'+part+'*.root '+JOBDIR+'/donelogs &> /dev/null')
         print 'mv '+JOBDIR+'/'+'*'+Sample+'*'+part+'*.root '+JOBDIR+'/donelogs/'
-        os.system('mv '+JOBDIR+'/'+'*'+Sample+'*'+part+'*.root '+JOBDIR+'/donelogs/')
+        if len(glob.glob(JOBDIR+'/'+'*'+Sample+'*'+part+'*.root'))!=0 : os.system('mv '+JOBDIR+'/'+'*'+Sample+'*'+part+'*.root '+JOBDIR+'/donelogs/')
         #rm_rfile='rm '+JOBDIR+'/'+'*'+Sample+'*'+part+'*.root'
         #os.system(rm_rfile)
         print "[jhchoi]mv done logs and remaing root files [DONE]"
@@ -518,14 +571,17 @@ for name in NAMES:
         #if open(pypath):
         if os.path.isfile(pypath):
             #CheckInputZombie(pypath)
-            if CheckInputZombie(pypath)==True and input_s!='':
+            IsInputZombie,filesize=CheckInputZombie(pypath)
+            if IsInputZombie==True and input_s!='':
                 ZOMBIEINPUT=True
 
             
-            
+            if filesize > 400:
+                print "[MEMORY INCREASE] filesize = ",filesize
+                AddRequestMemory(jdspath,float(filesize*10))
+                #print "a"
         
-        
-        if not os.path.isfile(logpath): os.system('touch '+logpath)
+        #if not os.path.isfile(logpath): os.system('touch '+logpath)
         if not os.path.isfile(jidpath): os.system('mv '+donepath+' '+jidpath)
         #if (not os.path.isfile(jidpath) and not os.path.isfile(donepath)):
         #    #print "os.path.isfile(jidpath)",os.path.isfile(jidpath)
@@ -562,11 +618,18 @@ for name in NAMES:
         if DRYRUN:
             print "DRYRUN!"
             TERMINATED=True
-            
-        f= open(logpath)
+        #CheckFileSize
+        f=open(logpath)
         lines=f.readlines()
         
+        job_started=False
+        last_update=''
         for line in lines:
+            if str(jid) in line and 'Job executing on host' in line:
+                job_started=True
+                STARTED=True
+            if 'Image size of job updated' in line:
+                last_update=line
             if 'Job terminated' in line and jid in line:
                 print "[.log]Job terminated"
                 TERMINATED=True
@@ -579,17 +642,32 @@ for name in NAMES:
                 print "[logZOMBIE]Job disconnected, attempting to reconnect"
                 ZOMBIE=True
                 break
+            if 'Job was held' in line and jid in line:
+                print "[log hold]Job was held"
+        ##if job is excuted
+        #if last_update!="":
+        #    updatetime=GetUpdateTime(last_update)
+        #    currenttime=datetime.now()
+        #    currenttime=currenttime.replace(year=2000)
+        #    if currenttime.year < updatetime.year:
+        #        currenttime.year=currenttime.year+1
+        #    pendingtime=(currenttime-updatetime).seconds
+        #    print "PENDINGTIME=",pendingtime
+        #    if pendingtime > 3600:
+        #        print "[ZOMBIE!!!]in log file, pending time is too large"
+        #        ZOMBIE=True
+        #    #this_datetime=datetime(2000,MM,DD,hh,mm,ss)
         f.close()
-        if not os.path.isfile(outpath): os.system('touch '+outpath)
-        f=open(outpath)
-        lines=f.readlines()
-        for line in lines:
-            if 'file probably overwritten: stopping reporting error messages' in line : 
-                print "[out zombie]file probably overwritten: stopping reporting error messages"
-                ZOMBIE=True
-                break
-            if 'Processed' in line and 'entries' in line and 'elapsed time' in line and 'kHz, avg speed' in line : STARTED=True
-        f.close()
+        if os.path.isfile(outpath):         
+            f=open(outpath)
+            lines=f.readlines()
+            for line in lines:
+                if 'file probably overwritten: stopping reporting error messages' in line : 
+                    print "[out zombie]file probably overwritten: stopping reporting error messages"
+                    ZOMBIE=True
+                    break
+                if 'Processed' in line and 'entries' in line and 'elapsed time' in line and 'kHz, avg speed' in line : STARTED=True
+            f.close()
         if os.path.isfile(errpath):
             f=open(errpath)
             lines=f.readlines()
@@ -618,6 +696,23 @@ for name in NAMES:
                     break
             f.close()
 
+        ##--Check last modification time
+        pendingtime=-1
+        for mypath in [logpath,errpath,outpath,jidpath]:
+            if os.path.isfile(mypath):
+                if pendingtime == -1: pendingtime=999999
+                this_modtime=LastModifiedTime(mypath)
+                if this_modtime < pendingtime:
+                    print mypath
+                    print 'this_modtime=',this_modtime
+                    pendingtime = this_modtime 
+        
+        print "[PENDING TIME]",pendingtime
+        if pendingtime > 3600 and STARTED:
+            ZOMBIE = True
+        #pendingtime= (LastModifiedTime(logpath), LastModifiedTime(errpath), LastModifiedTime(outpath))
+
+
         if ZOMBIEINPUT : LIST_ZOMBIEINPUT[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
         elif TERMINATED: LIST_FAIL[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
         elif ZOMBIE    : LIST_ZOMBIE[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
@@ -645,7 +740,10 @@ for a in LIST_ZOMBIEINPUT:
     print a
 
 print " --- kill zombie---"
-for a in LIST_ZOMBIE:
+LIST_KILL={}
+LIST_KILL.update(LIST_ZOMBIE)
+LIST_KILL.update(LIST_FAIL)
+for a in LIST_KILL:
 
     
 
@@ -654,7 +752,8 @@ for a in LIST_ZOMBIE:
 
 
 
-    os.system('mv '+donepath+' '+jidpath)
+    if os.path.isfile(donepath) : os.system('mv '+donepath+' '+jidpath)
+    if not os.path.isfile(jidpath):continue
     f=open(jidpath)
     lines=f.readlines()
     jid=''
@@ -689,7 +788,8 @@ for a in LIST_RESUB:
     part=LIST_RESUB[a]['part']
     print "@Clean up remaining root files"
     rm_rfile='rm '+JOBDIR+'/'+'*'+Sample+'*'+part+'*.root'
-
+    if len(glob.glob(JOBDIR+'/'+'*'+Sample+'*'+part+'*.root'))!=0:
+        os.system(rm_rfile)
 
     #print samplename                                                                                                                                         
 
@@ -871,14 +971,28 @@ for a in LIST_RESUB:
     curdir=os.getcwd()
     
     os.chdir(JOBDIR)
-    idx=len(glob.glob(a+'.log*'))
-    os.system('mv '+a+'.err '+a+'.err_'+str(idx))
-    os.system('mv '+a+'.out '+a+'.out_'+str(idx))
-    os.system('mv '+a+'.log '+a+'.log_'+str(idx))
-    os.system('mv '+a+'.jid '+a+'.jid_'+str(idx))
 
+
+    #this_memory = 0
+    #print "logpath->",a+'.log'
+    #if os.path.isfile(a+'.log') : 
+    #    this_memory=CalcMemory(a+'.log')##inMB
+    #    print "[MEMORY USAGE CHECK]",this_memory,"MB"
+    #if this_memory > 2900:
+    #    print "[JOB]Over 1000MB Memory, add request memory to jds"
+    #    AddRequestMemory(a+'.jds')
+
+
+
+    idx=len(glob.glob(a+'.log*'))
+    if os.path.isfile(a+'.err') : os.system('mv '+a+'.err '+a+'.err_'+str(idx))
+    if os.path.isfile(a+'.out') : os.system('mv '+a+'.out '+a+'.out_'+str(idx))
+    if os.path.isfile(a+'.log') : os.system('mv '+a+'.log '+a+'.log_'+str(idx))
+    if os.path.isfile(a+'.jid') : os.system('mv '+a+'.jid '+a+'.jid_'+str(idx))
+    
     if want_modify_workdir=='y':
         change_workdir(a+'.sh')
+
     resubmit='condor_submit '+a+'.jds > '+a+'.jid'
     print resubmit
     os.system(resubmit)
