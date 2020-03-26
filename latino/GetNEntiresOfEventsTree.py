@@ -2,7 +2,11 @@ import sys
 import ROOT
 def GetNEntiresOfEventsTree(path):
     myfile=ROOT.TFile.Open(path)
-    N=myfile.Get("Events").GetEntries()
+    N=0
+    try:
+        N=myfile.Get("Events").GetEntries()
+    except AttributeError:
+        N=-1
     myfile.Close()
     return N
 
