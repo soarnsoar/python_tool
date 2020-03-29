@@ -14,8 +14,10 @@ print 'scriptpath=',scriptpath
 sys.path.insert(0, scriptpath+"../")
 from CalMemoryUsage_condor import CalcMemory ##input = logpath+<logfile>.log
 from AddRequestMemory import AddRequestMemory
+from AddRequestDisk import AddRequestDisk
 from datetime import datetime
 from LastModifiedTime import LastModifiedTime
+from GetCondorSpace import GetCondorSpace
 print "====Start check_nanoGardener_jobs.py===="
 #JOB_DIR_SPLIT = ( jobDirSplit == True )
 JOB_DIR_SPLIT=False
@@ -580,7 +582,8 @@ for name in NAMES:
                 print "[MEMORY INCREASE] filesize = ",filesize
                 AddRequestMemory(jdspath,float(filesize*10))
                 #print "a"
-        
+        print "[jhchoi]Add requst disk"
+        AddRequestDisk(jdspath,'3G')
         #if not os.path.isfile(logpath): os.system('touch '+logpath)
         if not os.path.isfile(jidpath): os.system('mv '+donepath+' '+jidpath)
         #if (not os.path.isfile(jidpath) and not os.path.isfile(donepath)):
@@ -619,45 +622,46 @@ for name in NAMES:
             print "DRYRUN!"
             TERMINATED=True
         #CheckFileSize
-        f=open(logpath)
-        lines=f.readlines()
+        if os.path.isfile(logpath):
+            f=open(logpath)
+            lines=f.readlines()
         
-        job_started=False
-        last_update=''
-        for line in lines:
-            if str(jid) in line and 'Job executing on host' in line:
-                job_started=True
-                STARTED=True
-            if 'Image size of job updated' in line:
-                last_update=line
-            if 'Job terminated' in line and jid in line:
-                print "[.log]Job terminated"
-                TERMINATED=True
-                break
-            if 'Job was aborted by the user' in line and jid in line: 
-                print "[.log]Job was aborted by the user"
-                TERMINATED=True
-                break
-            if 'Job disconnected, attempting to reconnect' in line and jid in line : 
-                print "[logZOMBIE]Job disconnected, attempting to reconnect"
-                ZOMBIE=True
-                break
-            if 'Job was held' in line and jid in line:
-                print "[log hold]Job was held"
-        ##if job is excuted
-        #if last_update!="":
-        #    updatetime=GetUpdateTime(last_update)
-        #    currenttime=datetime.now()
-        #    currenttime=currenttime.replace(year=2000)
-        #    if currenttime.year < updatetime.year:
-        #        currenttime.year=currenttime.year+1
-        #    pendingtime=(currenttime-updatetime).seconds
-        #    print "PENDINGTIME=",pendingtime
-        #    if pendingtime > 3600:
-        #        print "[ZOMBIE!!!]in log file, pending time is too large"
-        #        ZOMBIE=True
-        #    #this_datetime=datetime(2000,MM,DD,hh,mm,ss)
-        f.close()
+            job_started=False
+            last_update=''
+            for line in lines:
+                if str(jid) in line and 'Job executing on host' in line:
+                    job_started=True
+                    STARTED=True
+                if 'Image size of job updated' in line:
+                    last_update=line
+                if 'Job terminated' in line and jid in line:
+                    print "[.log]Job terminated"
+                    TERMINATED=True
+                    break
+                if 'Job was aborted by the user' in line and jid in line: 
+                    print "[.log]Job was aborted by the user"
+                    TERMINATED=True
+                    break
+                if 'Job disconnected, attempting to reconnect' in line and jid in line : 
+                    print "[logZOMBIE]Job disconnected, attempting to reconnect"
+                    ZOMBIE=True
+                    break
+                if 'Job was held' in line and jid in line:
+                    print "[log hold]Job was held"
+            ##if job is excuted
+            #if last_update!="":
+            #    updatetime=GetUpdateTime(last_update)
+            #    currenttime=datetime.now()
+            #    currenttime=currenttime.replace(year=2000)
+            #    if currenttime.year < updatetime.year:
+            #        currenttime.year=currenttime.year+1
+            #    pendingtime=(currenttime-updatetime).seconds
+            #    print "PENDINGTIME=",pendingtime
+            #    if pendingtime > 3600:
+            #        print "[ZOMBIE!!!]in log file, pending time is too large"
+            #        ZOMBIE=True
+            #    #this_datetime=datetime(2000,MM,DD,hh,mm,ss)
+            f.close()
         if os.path.isfile(outpath):         
             f=open(outpath)
             lines=f.readlines()
@@ -702,14 +706,15 @@ for name in NAMES:
             if os.path.isfile(mypath):
                 if pendingtime == -1: pendingtime=999999
                 this_modtime=LastModifiedTime(mypath)
+                print mypath
+                print 'this_modtime=',this_modtime
                 if this_modtime < pendingtime:
-                    print mypath
-                    print 'this_modtime=',this_modtime
                     pendingtime = this_modtime 
         
         print "[PENDING TIME]",pendingtime
         if pendingtime > 3600 and STARTED:
-            ZOMBIE = True
+            print "[PENDINGTIME ]MORE THAN 1hour"
+            #ZOMBIE = True
         #pendingtime= (LastModifiedTime(logpath), LastModifiedTime(errpath), LastModifiedTime(outpath))
 
 
@@ -929,7 +934,10 @@ while ANSWERED==0:
             ANSWERED=0
 
 
-
+#CondorSpace=GetCondorSpace()
+#if CondorSpace >70: ## more than 70G
+print "[CONDOR SPACE] forece to WORK @ CONDOR SCRATCH"
+want_modify_workdir='y'
 ##Get Nmyjob on queue
 
 Nmyjob=GetNJobs()
@@ -990,8 +998,8 @@ for a in LIST_RESUB:
     if os.path.isfile(a+'.log') : os.system('mv '+a+'.log '+a+'.log_'+str(idx))
     if os.path.isfile(a+'.jid') : os.system('mv '+a+'.jid '+a+'.jid_'+str(idx))
     
-    if want_modify_workdir=='y':
-        change_workdir(a+'.sh')
+    #if want_modify_workdir=='y': ##off this option. this is default
+        #change_workdir(a+'.sh')
 
     resubmit='condor_submit '+a+'.jds > '+a+'.jid'
     print resubmit

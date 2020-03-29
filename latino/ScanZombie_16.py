@@ -5,9 +5,9 @@ from OpenFileInPyroot import OpenFileInPyroot
 
 BASEDIR='/xrootd_user/jhchoi/xrootd/Latino/HWWNano/'
 #Production='Fall2017_102X_nAODv4_Full2017v5'
-Production='Summer16_102X_nAODv4_Full2016v5'
+Production='Summer16_102X_nAODv5_Full2016v6'
 #Step='/MCl1loose2017v5__MCCorr2017v5*'
-Step='/MCl1loose2016v5__MCCorr2016v5*'
+Step='/MCl1loose2016v6__MCCorr2016v6*'
 
 THISDIR=BASEDIR+'/'+Production+'/'+Step+'/'
 
