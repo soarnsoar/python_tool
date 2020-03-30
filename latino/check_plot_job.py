@@ -170,6 +170,12 @@ for name in NAMES:
 print "---success--"
 print len(SUCCESS),"/",len(NAMES)
 
+print "---success but no DoneFile--"
+SUCCESS_NODONE=list(set(SUCCESS).intersection(NO_DONEFILE))
+print len(SUCCESS_NODONE),"/",len(NAMES)
+for a in SUCCESS_NODONE:
+    print a
+
 print "--running  jobs--"
 #print len(HASMISSING),"/",len(NAMES)
 #for a in HASMISSING:
@@ -226,12 +232,13 @@ while ANSWERED==0:
 ANSWERED=0
 want_resub_noDone='n'
 while ANSWERED==0:
-    want_resub_notstarted=raw_input('want to resubmit  jobs without donefile using condor_submit? (y/n)')
-    print(want_resub_notstarted)
+    want_resub_noDone=raw_input('want to resubmit  jobs without donefile using condor_submit? (y/n)')
+    print(want_resub_noDone)
     if want_resub_noDone=='y' or want_resub_noDone=='n':
         ANSWERED=1
         if want_resub_noDone=='y':
             RESUB=RESUB+NO_DONEFILE
+            print "add nodonfiles to resublist"
             #want_resub='y'
 
 
