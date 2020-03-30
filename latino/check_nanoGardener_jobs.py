@@ -646,6 +646,10 @@ for name in NAMES:
                     print "[logZOMBIE]Job disconnected, attempting to reconnect"
                     ZOMBIE=True
                     break
+                if 'Job was evicted' in line and jid in line : 
+                    print "[logZOMBIE]Job was evicted"
+                    ZOMBIE=True
+                    break
                 if 'Job was held' in line and jid in line:
                     print "[log hold]Job was held"
             ##if job is excuted
