@@ -18,9 +18,18 @@ sys.path.insert(0, "python_tool/latino/")
 import math
 from HistoParser import HistoParser
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("-c", dest='conf')
+parser.add_argument("-f", dest='histofile')
+args=parser.parse_args()
 
-conf='configuration_Boosted.py'
-histofile='hadd.root'
+
+#conf='configuration_Boosted.py'
+#histofile='hadd.root'
+conf=args.conf
+histofile=args.histofile
+
 ##--declare--##
 variables={}
 cuts={}
