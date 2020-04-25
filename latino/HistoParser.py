@@ -20,18 +20,25 @@ class HistoParser():
                 for variable in self.mydict[gr]['variables']:
                     self.mydict[gr]['histo'][cut][variable]={}
                     idx=0
+                    integrals=0.
                     #self.mydict[gr]['histo'][cut][variable]['Sum']=
                     for sample in self.mydict[gr]['samples']:
+                        #print '----sample=',sample,'-----'
                         htemp=f.Get(cut+'/'+variable+'/histo_'+sample)
                         #print "type(htemp)",type(htemp)
                         self.mydict[gr]['histo'][cut][variable][sample]=htemp.Clone()
                         self.mydict[gr]['histo'][cut][variable][sample].SetDirectory(0)
+                        #print "htemp.Integral()=",htemp.Integral()
+                        #print "self.mydict[gr]['histo'][cut][variable][sample].Integral()",self.mydict[gr]['histo'][cut][variable][sample].Integral()
                         if idx==0:
                             self.mydict[gr]['histo'][cut][variable]['Sum']=htemp.Clone()
                             self.mydict[gr]['histo'][cut][variable]['Sum'].SetDirectory(0)
                         else:
                             self.mydict[gr]['histo'][cut][variable]['Sum'].Add(htemp)
-
+                        integrals+=self.mydict[gr]['histo'][cut][variable][sample].Integral()
+                        #print "sum one by one=",integrals
+                        #print "integral sum histo=",self.mydict[gr]['histo'][cut][variable]['Sum'].Integral()
+                        idx+=1
                         #print "type(self.mydict[gr]['histo'][cut][variable][sample])",type(self.mydict[gr]['histo'][cut][variable][sample])
                         #print "gr=",gr,'cut=',cut,'variable=',variable,'sample=',sample
                         #print "print type(mydict['gr1']['histo']['eleCH__BoostedggF__SR__METOver40__PtOverM04']['MEKD_Bst_C_0.003_M900']['DATA'])=",type(mydict['gr1']['histo']['eleCH__BoostedggF__SR__METOver40__PtOverM04']['MEKD_Bst_C_0.003_M900']['DATA'])
