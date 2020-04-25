@@ -95,14 +95,14 @@ for cut in sorted(cuts):
       #   f.cd(cut+'/'+var)
       #   print "--current dir--"
       #   ROOT.gDirectory.pwd()
-      #   ROOT.gDirectory.WriteObject(histoana.mydict['bkg']['histo'][cut][var]['Sum'],'histo_PeudoData')
+      #   ROOT.gDirectory.WriteObject(histoana.mydict['bkg']['histo'][cut][var]['Sum'],'histo_PseudoData')
       #   ROOT.gDirectory.ls()
 
       f.cd(cut+'/'+var)
       #idx+=1
       #initdir=ROOT.gDirectory.CurrentDirectory()
 
-      ROOT.gDirectory.WriteObject(histoana.mydict['bkg']['histo'][cut][var]['Sum'],'histo_PeudoData')
+      ROOT.gDirectory.WriteObject(histoana.mydict['bkg']['histo'][cut][var]['Sum'],'histo_PseudoData')
       #f.cd(initdir)
       #f.cd('../')
    #f.cd('../')
