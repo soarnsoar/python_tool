@@ -22,6 +22,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", dest='conf')
 parser.add_argument("-f", dest='histofile')
+parser.add_argument("-s", dest='samplelist')
 args=parser.parse_args()
 
 
@@ -29,6 +30,7 @@ args=parser.parse_args()
 #histofile='hadd.root'
 conf=args.conf
 histofile=args.histofile
+samplelist=args.samplelist.split(',')
 
 ##--declare--##
 variables={}
@@ -55,7 +57,8 @@ this_dict={
       #'variables':['MEKD_Bst_C_0.003_M900'],
       'variables':sorted(variables),
       'FileName':histofile,
-      'samples':['DY','QCD_EM','QCD_bcToE','WW','WWW','WWZ','WZ','WZZ','ZZZ','ZZ','Wjets0j','Wjets1j','Wjets2j','WpWmJJ_EWK_QCD_noHiggs','top',]        
+      #'samples':['DY','QCD_EM','QCD_bcToE','WW','WWW','WWZ','WZ','WZZ','ZZZ','ZZ','Wjets0j','Wjets1j','Wjets2j','WpWmJJ_EWK_QCD_noHiggs','top',]        
+      'samples':samplelist,
    },
 }
 histoana=HistoParser(this_dict)
