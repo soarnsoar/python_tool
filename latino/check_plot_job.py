@@ -3,7 +3,7 @@ import glob
 import commands
 import ROOT
 import sys
-
+import optparse
 
 
 
@@ -101,6 +101,14 @@ def GetJid(jidfile):
 
 ######END:preDefined functions######
 
+usage = 'usage: %prog [options]'
+parser = optparse.OptionParser(usage)
+parser.add_option("-d","--want_remove",   dest="want_remove", help="Want to remove not started jobs")
+parser.add_option("-u","--want_resub_notstarted",   dest="want_resub_notstarted", help="want_resub_notstarted")
+parser.add_option("-n","--want_resub_noDone",   dest="want_resub_noDone", help="want_resub_noDone")
+parser.add_option("-r","--want_resub_fail",   dest="want_resub_fail", help="want_resub_fail")
+
+(options, args) = parser.parse_args()
 
     
 
@@ -209,7 +217,10 @@ RESUB=[]
 ANSWERED=0
 want_remove='n'
 while ANSWERED==0:
-    want_remove=raw_input('want to remove not finished jobs? (y/n)')
+    if options.want_remove:
+        want_remove=options.want_remove
+    else:
+        want_remove=raw_input('want to remove not finished jobs? (y/n)')
     print(want_remove)
     if want_remove=='y' or want_remove=='n':
         ANSWERED=1
@@ -221,7 +232,10 @@ while ANSWERED==0:
 ANSWERED=0
 want_resub_notstarted='n'
 while ANSWERED==0:
-    want_resub_notstarted=raw_input('want to resubmit not started jobs using condor_submit? (y/n)')
+    if options.want_resub_notstarted:
+        want_resub_notstarted=options.want_resub_notstarted
+    else:
+        want_resub_notstarted=raw_input('want to resubmit not started jobs using condor_submit? (y/n)')
     print(want_resub_notstarted)
     if want_resub_notstarted=='y' or want_resub_notstarted=='n':
         ANSWERED=1
@@ -232,7 +246,10 @@ while ANSWERED==0:
 ANSWERED=0
 want_resub_noDone='n'
 while ANSWERED==0:
-    want_resub_noDone=raw_input('want to resubmit  jobs without donefile using condor_submit? (y/n)')
+    if options.want_resub_noDone:
+        want_resub_noDone=options.want_resub_noDone
+    else:
+        want_resub_noDone=raw_input('want to resubmit  jobs without donefile using condor_submit? (y/n)')
     print(want_resub_noDone)
     if want_resub_noDone=='y' or want_resub_noDone=='n':
         ANSWERED=1
@@ -245,7 +262,10 @@ while ANSWERED==0:
 ANSWERED=0
 want_resub_fail='n'
 while ANSWERED==0:
-    want_resub_fail=raw_input('want to resubmit failed jobs using condor_submit? (y/n)')
+    if options.want_resub_fail:
+        want_resub_fail=options.want_resub_fail
+    else:
+        want_resub_fail=raw_input('want to resubmit failed jobs using condor_submit? (y/n)')
     print(want_resub_fail)
     if want_resub_fail=='y' or want_resub_fail=='n':
         ANSWERED=1
