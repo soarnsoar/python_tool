@@ -83,6 +83,44 @@ class HistoParser():
                         self.mydict[gr]['histo'][cut][variable]['envelopUp'].SetBinContent(ibin,ymax)
                         self.mydict[gr]['histo'][cut][variable]['envelopDown'].SetBinContent(ibin,ymin)
                         
+    def MakeRmsShape(self,rmsHistoName):
+        for gr in self.mydict:
+            for cut in self.mydict[gr]['cuts']:
+                for variable in self.mydict[gr]['variables']:
+                    ###For this cut, this variable
+                    ###iterate each shape
+
+                    Nbins=-1
+                    for sample in self.mydict[gr]['samples']:
+                        self.mydict[gr]['histo'][cut][variable]['rmsUp']=self.mydict[gr]['histo'][cut][variable][sample].Clone()
+                        self.mydict[gr]['histo'][cut][variable]['rmsUp'].SetDirectory(0)
+                        self.mydict[gr]['histo'][cut][variable]['rmsUp'].SetName(rmsHistoName+"Up")
+                        self.mydict[gr]['histo'][cut][variable]['rmsUp'].SetTitle(rmsHistoName+"Up")
+
+                        self.mydict[gr]['histo'][cut][variable]['rmsDown']=self.mydict[gr]['histo'][cut][variable][sample].Clone()
+                        self.mydict[gr]['histo'][cut][variable]['rmsDown'].SetDirectory(0)
+                        self.mydict[gr]['histo'][cut][variable]['rmsDown'].SetName(rmsHistoName+"Down")
+                        self.mydict[gr]['histo'][cut][variable]['rmsDown'].SetTitle(rmsHistoName+"Down")
+                        Nbins=self.mydict[gr]['histo'][cut][variable]['rmsUp'].GetNbinsX()
+                        break ##only for the first sample to get Nbins
+                    #print Nbins
+                    for ibin in range(0,Nbins+1):
+                        
+                        y0=self.mydict[gr]['histo'][cut][variable]['rmsDown'].GetBinContent(ibin)
+                        y0err=self.mydict[gr]['histo'][cut][variable]['rmsDown'].GetBinError(ibin)
+                        ##sigma = sqrt(sum[ (yi-y0)**2])
+                        SumOfDiff2=0
+                        for sample in self.mydict[gr]['samples']: ##Make rms up/down
+                            y=self.mydict[gr]['histo'][cut][variable][sample].GetBinContent(ibin)
+                            yerr=self.mydict[gr]['histo'][cut][variable][sample].GetBinError(ibin)
+                            SumOfDiff2+=(y-y0)**2
+                        sigma=math.sqrt(SumOfDiff2)
+
+                        
+
+                        self.mydict[gr]['histo'][cut][variable]['rmsUp'].SetBinContent(ibin,y0+sigma)
+                        self.mydict[gr]['histo'][cut][variable]['rmsDown'].SetBinContent(ibin,y0-sigma)
+                        
 
 
             #print self.mydict[gr]['histo']
