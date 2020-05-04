@@ -23,7 +23,7 @@ class HistoParser():
                     integrals=0.
                     #self.mydict[gr]['histo'][cut][variable]['Sum']=
                     for sample in self.mydict[gr]['samples']:
-                        #print '----sample=',sample,'-----'
+                        #print '----cut=',cut,'sample=',sample,'-----'
                         htemp=f.Get(cut+'/'+variable+'/histo_'+sample)
                         #print "type(htemp)",type(htemp)
                         self.mydict[gr]['histo'][cut][variable][sample]=htemp.Clone()
@@ -44,7 +44,46 @@ class HistoParser():
                         #print "print type(mydict['gr1']['histo']['eleCH__BoostedggF__SR__METOver40__PtOverM04']['MEKD_Bst_C_0.003_M900']['DATA'])=",type(mydict['gr1']['histo']['eleCH__BoostedggF__SR__METOver40__PtOverM04']['MEKD_Bst_C_0.003_M900']['DATA'])
                     
             f.Close()
-            
+    def MakeEnvelopShape(self,envelopHistoName):
+        for gr in self.mydict:
+            for cut in self.mydict[gr]['cuts']:
+                for variable in self.mydict[gr]['variables']:
+                    ###For this cut, this variable
+                    ###iterate each shape
+
+                    Nbins=-1
+                    for sample in self.mydict[gr]['samples']:
+                        self.mydict[gr]['histo'][cut][variable]['envelopUp']=self.mydict[gr]['histo'][cut][variable][sample].Clone()
+                        self.mydict[gr]['histo'][cut][variable]['envelopUp'].SetDirectory(0)
+                        self.mydict[gr]['histo'][cut][variable]['envelopUp'].SetName(envelopHistoName+"Up")
+                        self.mydict[gr]['histo'][cut][variable]['envelopUp'].SetTitle(envelopHistoName+"Up")
+
+                        self.mydict[gr]['histo'][cut][variable]['envelopDown']=self.mydict[gr]['histo'][cut][variable][sample].Clone()
+                        self.mydict[gr]['histo'][cut][variable]['envelopDown'].SetDirectory(0)
+                        self.mydict[gr]['histo'][cut][variable]['envelopDown'].SetName(envelopHistoName+"Down")
+                        self.mydict[gr]['histo'][cut][variable]['envelopDown'].SetTitle(envelopHistoName+"Down")
+                        Nbins=self.mydict[gr]['histo'][cut][variable]['envelopUp'].GetNbinsX()
+                        break ##only for the first sample to get Nbins
+                    #print Nbins
+                    for ibin in range(0,Nbins+1):
+                        
+                        ymax=self.mydict[gr]['histo'][cut][variable]['envelopDown'].GetBinContent(ibin)
+                        ymaxerr=self.mydict[gr]['histo'][cut][variable]['envelopDown'].GetBinError(ibin)
+                        ymin=self.mydict[gr]['histo'][cut][variable]['envelopDown'].GetBinContent(ibin)
+                        yminerr=self.mydict[gr]['histo'][cut][variable]['envelopDown'].GetBinError(ibin)
+                        for sample in self.mydict[gr]['samples']:
+                            y=self.mydict[gr]['histo'][cut][variable][sample].GetBinContent(ibin)
+                            yerr=self.mydict[gr]['histo'][cut][variable][sample].GetBinError(ibin)
+                            if y >= ymax : 
+                                ymax=y
+                                ymaxerr=yerr
+                            if y < ymin : 
+                                ymin=y
+                                yminerr=yerr
+                        self.mydict[gr]['histo'][cut][variable]['envelopUp'].SetBinContent(ibin,ymax)
+                        self.mydict[gr]['histo'][cut][variable]['envelopDown'].SetBinContent(ibin,ymin)
+                        
+
 
             #print self.mydict[gr]['histo']
         #print type(mydict['gr1']['histo']['eleCH__BoostedggF__SR__METOver40__PtOverM04']['MEKD_Bst_C_0.003_M900']['DATA'])
