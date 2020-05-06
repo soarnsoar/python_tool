@@ -1,4 +1,5 @@
 import ROOT
+import math
 ROOT.gROOT.SetBatch(True)
 class HistoParser():
     def __init__(self,mydict):
