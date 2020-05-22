@@ -24,7 +24,7 @@ class HistoParser():
                     integrals=0.
                     #self.mydict[gr]['histo'][cut][variable]['Sum']=
                     for sample in self.mydict[gr]['samples']:
-                        #print '----cut=',cut,'sample=',sample,'-----'
+                        print '----cut=',cut,'variable',variable,'sample=',sample,'-----'
                         htemp=f.Get(cut+'/'+variable+'/histo_'+sample)
                         #print "type(htemp)",type(htemp)
                         self.mydict[gr]['histo'][cut][variable][sample]=htemp.Clone()
