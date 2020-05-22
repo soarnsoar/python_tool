@@ -4,11 +4,11 @@ import commands
 import ROOT
 import sys
 import optparse
-
+import glob
 
 
 CheckSocketErrorOpen=True
-CheckSocketErrorClose=False
+CheckSocketErrorClose=True
 
 
 
@@ -74,9 +74,25 @@ def isTerminated(logfile,jid):##005 (3294050.000.000) 02/28 18:31:21 Job termina
         if 'Job was aborted by the user' in line and str(jid) in line:
             isTerminated=True
             break
+        
     f.close()
     
     return isTerminated
+
+def isZombie(name,jid):##005 (3294050.000.000) 02/28 18:31:21 Job terminated.
+    logfile=name+'.log'
+    f=open(logfile)
+    lines=f.readlines()
+    isZombie=False
+
+    for line in lines:
+        if 'Job was evicted' in line and str(jid) in line:
+            isZombie=True
+            break
+    f.close()
+
+    return isZombie
+
 
 def GetJid(jidfile):
     
@@ -170,7 +186,8 @@ for name in NAMES:
     IsFail=HasSocketError(name+'.err')
     
     IsTerminated=isTerminated(name+'.log',jid)
-    if IsFail : FAILS.append(name)
+    IsZombie=isZombie(name,jid)
+    if IsFail or IsZombie : FAILS.append(name)
     if not IsTerminated: NOT_FINISHED.append(name)
     if IsTerminated and not IsFail:SUCCESS.append(name)
 
@@ -324,11 +341,9 @@ for a in RESUB:
 
     curdir=os.getcwd()
     os.chdir(JOBDIR)
-    if os.path.isfile(a+'.err'):  os.system('rm '+a+'.err')
-    if os.path.isfile(a+'.out'):  os.system('rm '+a+'.out')
-    if os.path.isfile(a+'.log'):  os.system('rm '+a+'.log')
-    if os.path.isfile(a+'.done'): os.system('rm '+a+'.done')
-    if os.path.isfile(a+'.jid'):  os.system('rm '+a+'.jid')
+    Nsub=len(glob.glob(a+'.log*'))
+    for form in ['err','out','log','done','jid']:
+        if os.path.isfile(a+'.'+form):  os.system('mv '+a+'.'+form+' '+a+'.'+form+'_'+str(Nsub) )
     resubmit='condor_submit '+a+'.jds > '+a+'.jid'
     
 
