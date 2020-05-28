@@ -74,6 +74,8 @@ class HistoParser():
                         ymaxerr=self.mydict[gr]['histo'][cut][variable]['envelopDown'].GetBinError(ibin)
                         ymin=self.mydict[gr]['histo'][cut][variable]['envelopDown'].GetBinContent(ibin)
                         yminerr=self.mydict[gr]['histo'][cut][variable]['envelopDown'].GetBinError(ibin)
+                        ycenter=ymin
+
                         for sample in self.mydict[gr]['samples']:
                             y=self.mydict[gr]['histo'][cut][variable][sample].GetBinContent(ibin)
                             yerr=self.mydict[gr]['histo'][cut][variable][sample].GetBinError(ibin)
@@ -84,7 +86,7 @@ class HistoParser():
                                 ymin=y
                                 yminerr=yerr
                         self.mydict[gr]['histo'][cut][variable]['envelopUp'].SetBinContent(ibin,ymax)
-                        self.mydict[gr]['histo'][cut][variable]['envelopDown'].SetBinContent(ibin,ymin)
+                        self.mydict[gr]['histo'][cut][variable]['envelopDown'].SetBinContent(ibin,max(ymin,0))
                         
     def MakeSymhessianAsShape(self,symhessianasHistoName):
         for gr in self.mydict:
@@ -117,6 +119,7 @@ class HistoParser():
                         Nsample=len(self.mydict[gr]['samples'])
                         for isample, sample in enumerate(self.mydict[gr]['samples']): ##Make symhessianas up/down
                             y=self.mydict[gr]['histo'][cut][variable][sample].GetBinContent(ibin)
+                            if y < 0 : continue
                             yerr=self.mydict[gr]['histo'][cut][variable][sample].GetBinError(ibin)
                             if isample < Nsample-2:
                                 SumOfDiff2+=(y-y0)**2
@@ -131,7 +134,7 @@ class HistoParser():
                         sigma_as = 0.5*(yplus-yminus)
                         sigma=math.sqrt(SumOfDiff2 + sigma_as**2)
                         self.mydict[gr]['histo'][cut][variable]['symhessianasUp'].SetBinContent(ibin,y0+sigma)
-                        self.mydict[gr]['histo'][cut][variable]['symhessianasDown'].SetBinContent(ibin,y0-sigma)
+                        self.mydict[gr]['histo'][cut][variable]['symhessianasDown'].SetBinContent(ibin,max(y0-sigma,0))
 
     def MakeRmsShape(self,rmsHistoName):
         for gr in self.mydict:
@@ -161,6 +164,7 @@ class HistoParser():
                         SumOfDiff2=0
                         for sample in self.mydict[gr]['samples']: ##Make rms up/down
                             y=self.mydict[gr]['histo'][cut][variable][sample].GetBinContent(ibin)
+                            if y < 0 :continue
                             yerr=self.mydict[gr]['histo'][cut][variable][sample].GetBinError(ibin)
                             SumOfDiff2+=(y-y0)**2
                         sigma=math.sqrt(SumOfDiff2)
