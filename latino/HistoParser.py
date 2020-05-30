@@ -27,6 +27,7 @@ class HistoParser():
                         #print '----cut=',cut,'variable',variable,'sample=',sample,'-----'
                         histopath=cut+'/'+variable+'/histo_'+sample
                         #print histopath
+                        
                         htemp=f.Get(cut+'/'+variable+'/histo_'+sample)
                         #print "type(htemp)",type(htemp)
                         self.mydict[gr]['histo'][cut][variable][sample]=htemp.Clone()
@@ -38,13 +39,11 @@ class HistoParser():
                             self.mydict[gr]['histo'][cut][variable]['Sum'].SetDirectory(0)
                         else:
                             self.mydict[gr]['histo'][cut][variable]['Sum'].Add(htemp)
-                        integrals+=self.mydict[gr]['histo'][cut][variable][sample].Integral()
-                        #print "sum one by one=",integrals
-                        #print "integral sum histo=",self.mydict[gr]['histo'][cut][variable]['Sum'].Integral()
-                        idx+=1
-                        #print "type(self.mydict[gr]['histo'][cut][variable][sample])",type(self.mydict[gr]['histo'][cut][variable][sample])
-                        #print "gr=",gr,'cut=',cut,'variable=',variable,'sample=',sample
-                        #print "print type(mydict['gr1']['histo']['eleCH__BoostedggF__SR__METOver40__PtOverM04']['MEKD_Bst_C_0.003_M900']['DATA'])=",type(mydict['gr1']['histo']['eleCH__BoostedggF__SR__METOver40__PtOverM04']['MEKD_Bst_C_0.003_M900']['DATA'])
+                            integrals+=self.mydict[gr]['histo'][cut][variable][sample].Integral()
+                            #print "sum one by one=",integrals
+                            #print "integral sum histo=",self.mydict[gr]['histo'][cut][variable]['Sum'].Integral()
+                            idx+=1
+                        
                     
             f.Close()
     def MakeEnvelopShape(self,envelopHistoName):
@@ -173,7 +172,7 @@ class HistoParser():
 
                         self.mydict[gr]['histo'][cut][variable]['rmsUp'].SetBinContent(ibin,y0+sigma)
                         self.mydict[gr]['histo'][cut][variable]['rmsDown'].SetBinContent(ibin,y0-sigma)
-                       
+    
 
 
             #print self.mydict[gr]['histo']
