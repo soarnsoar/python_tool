@@ -32,11 +32,14 @@ class HistoParser():
                         #print "type(htemp)",type(htemp)
                         self.mydict[gr]['histo'][cut][variable][sample]=htemp.Clone()
                         self.mydict[gr]['histo'][cut][variable][sample].SetDirectory(0)
+                        
                         #print "htemp.Integral()=",htemp.Integral()
                         #print "self.mydict[gr]['histo'][cut][variable][sample].Integral()",self.mydict[gr]['histo'][cut][variable][sample].Integral()
                         if idx==0:
                             self.mydict[gr]['histo'][cut][variable]['Sum']=htemp.Clone()
                             self.mydict[gr]['histo'][cut][variable]['Sum'].SetDirectory(0)
+                            self.mydict[gr]['histo'][cut][variable]['Sum'].SetName(sample)
+                            self.mydict[gr]['histo'][cut][variable]['Sum'].SetTitle(sample)
                         else:
                             self.mydict[gr]['histo'][cut][variable]['Sum'].Add(htemp)
                             integrals+=self.mydict[gr]['histo'][cut][variable][sample].Integral()

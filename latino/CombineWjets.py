@@ -68,7 +68,7 @@ handle.close()
 
 
 ##---END--##
-print "[CombineMultiV.py] len(cuts)=",len(cuts)
+print "[CombineWjets.py] len(cuts)=",len(cuts)
 
 #nuisances
 #ListVar=['']
@@ -109,23 +109,12 @@ for cut in sorted(cuts):
    print cut
    #f.cd(cut)                                                                                                                                                               
    for var in sorted(variables):
-      #if idx==0:                                                                                                                                                           
-      #   print "init dir"                                                                                                                                                  
-      #   ROOT.gDirectory.pwd()                                                                                                                                             
-      #   print 'go to',cut,var                                                                                                                                             
-      #   f.cd(cut+'/'+var)                                                                                                                                                 
-      #   print "--current dir--"                                                                                                                                           
-      #   ROOT.gDirectory.pwd()                                                                                                                                             
-      #   ROOT.gDirectory.WriteObject(histoana.mydict['multiv']['histo'][cut][var]['Sum'],'histo_PseudoData')                                                               
-      #   ROOT.gDirectory.ls()
       f.cd(cut+'/'+var)
-      #idx+=1                                                                                                                                                               
-      #initdir=ROOT.gDirectory.CurrentDirectory()                                                                                                                           
-      #print "Shape histo_MultiV created"                                                                                                                                   
+
       for gr in histoana.mydict:
-         histoana.mydict[gr]['histo'][cut][var]['Sum'].SetTitle('histo_MultiV')
-         histoana.mydict[gr]['histo'][cut][var]['Sum'].SetName('histo_MultiV')
-         ROOT.gDirectory.WriteObject(histoana.mydict[gr]['histo'][cut][var]['Sum'],'histo_MultiV')
+         histoana.mydict[gr]['histo'][cut][var]['Sum'].SetTitle('histo_Wjets')
+         histoana.mydict[gr]['histo'][cut][var]['Sum'].SetName('histo_Wjets')
+         ROOT.gDirectory.WriteObject(histoana.mydict[gr]['histo'][cut][var]['Sum'],'histo_Wjets')
          #f.cd(initdir)                                                                                                                                                     
          #f.cd('../')                                                                                                                                                       
          #f.cd('../')                                                                                                                                                       
@@ -201,24 +190,13 @@ for nuis in nuisances:
          print cut
          #f.cd(cut)
          for var in sorted(variables):      
-            #if idx==0:
-            #   print "init dir"
-            #   ROOT.gDirectory.pwd()
-            #   print 'go to',cut,var
-            #   f.cd(cut+'/'+var)
-            #   print "--current dir--"
-            #   ROOT.gDirectory.pwd()
-            #   ROOT.gDirectory.WriteObject(histoana.mydict['multiv']['histo'][cut][var]['Sum'],'histo_PseudoData')
-            #   ROOT.gDirectory.ls()
             
             f.cd(cut+'/'+var)
-            #idx+=1
-            #initdir=ROOT.gDirectory.CurrentDirectory()
-            #print "Shape histo_MultiV created"
+
             for gr in histoana.mydict:
-               histoana.mydict[gr]['histo'][cut][var]['Sum'].SetTitle('histo_MultiV_'+nuis)
-               histoana.mydict[gr]['histo'][cut][var]['Sum'].SetName('histo_MultiV_'+nuis)
-               ROOT.gDirectory.WriteObject(histoana.mydict[gr]['histo'][cut][var]['Sum'],'histo_MultiV'+"_"+nuisances[nuis]['name']+gr)##gr=Up,Down
+               histoana.mydict[gr]['histo'][cut][var]['Sum'].SetTitle('histo_Wjets_'+nuis)
+               histoana.mydict[gr]['histo'][cut][var]['Sum'].SetName('histo_Wjets_'+nuis)
+               ROOT.gDirectory.WriteObject(histoana.mydict[gr]['histo'][cut][var]['Sum'],'histo_Wjets'+"_"+nuisances[nuis]['name']+gr)##gr=Up,Down
                #f.cd(initdir)
                #f.cd('../')
                #f.cd('../')
