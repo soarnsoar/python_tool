@@ -1,7 +1,7 @@
 import datetime
 begin_time = datetime.datetime.now()
 
-BKG=[ 'DY', 'MultiV', 'WpWmJJ_EWK_QCD_noHiggs', 'top', 'Wjets','vbfHWWlnuqq_M125','ggHWWlnuqq_M125']
+
 
 
 
@@ -11,7 +11,7 @@ ROOT.gROOT.SetBatch(True)
 import sys
 sys.path.insert(0, "python_tool/latino/")
 import math
-#from HistoParser import HistoParser
+from HistoParser import HistoParser
 
 import argparse
 parser = argparse.ArgumentParser()

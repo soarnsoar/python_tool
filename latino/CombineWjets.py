@@ -194,9 +194,10 @@ for nuis in nuisances:
             f.cd(cut+'/'+var)
 
             for gr in histoana.mydict:
-               histoana.mydict[gr]['histo'][cut][var]['Sum'].SetTitle('histo_Wjets_'+nuis)
-               histoana.mydict[gr]['histo'][cut][var]['Sum'].SetName('histo_Wjets_'+nuis)
-               ROOT.gDirectory.WriteObject(histoana.mydict[gr]['histo'][cut][var]['Sum'],'histo_Wjets'+"_"+nuisances[nuis]['name']+gr)##gr=Up,Down
+               thisname='histo_Wjets'+"_"+nuisances[nuis]['name']+gr
+               histoana.mydict[gr]['histo'][cut][var]['Sum'].SetTitle(thisname)
+               histoana.mydict[gr]['histo'][cut][var]['Sum'].SetName(thisname)
+               ROOT.gDirectory.WriteObject(histoana.mydict[gr]['histo'][cut][var]['Sum'],thisname)
                #f.cd(initdir)
                #f.cd('../')
                #f.cd('../')

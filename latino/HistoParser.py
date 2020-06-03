@@ -26,7 +26,7 @@ class HistoParser():
                     for sample in self.mydict[gr]['samples']:
                         #print '----cut=',cut,'variable',variable,'sample=',sample,'-----'
                         histopath=cut+'/'+variable+'/histo_'+sample
-                        #print histopath
+                        print histopath
                         
                         htemp=f.Get(cut+'/'+variable+'/histo_'+sample)
                         #print "type(htemp)",type(htemp)
