@@ -1,5 +1,6 @@
 import os
 import optparse
+import glob
 class haddjob():
 
     def __init__(self,jobname,ncpu,targetdir):
@@ -7,6 +8,7 @@ class haddjob():
         self.targetdir=targetdir
         self.jobname=jobname
         self.CWD=os.getcwd()
+        self.memory=self.GetDirSize(self.targetdir)/2
         self.workdir=self.CWD+"/workdirhadd_"+self.jobname
         self.JdsPath=self.workdir+'/'+'runhadd.jds'
         self.ExePath=self.workdir+'/'+'runhadd.sh'
@@ -42,6 +44,7 @@ class haddjob():
         self.jds.append('request_cpus = '+str(self.ncpu))
         self.jds.append('accounting_group=group_cms')
         self.jds.append('JobBatchName='+self.jobname)
+        self.jds.append('request_memory = '+str(int(self.memory))+' MB \n')
         self.jds.append('queue')
 
     def ExportWorkspace(self):
@@ -65,7 +68,13 @@ class haddjob():
         print command
         os.system(command)
 
-
+    def GetDirSize(self,path):
+        flist=glob.glob(path+'/plot*.root')
+        mysize=0.
+        for f in flist:
+            mysize+=os.path.getsize(f)/1024/1024
+        return mysize
+        
 if __name__ == '__main__':
     usage = 'usage: %prog [options]'
     parser = optparse.OptionParser(usage)
