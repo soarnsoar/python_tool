@@ -1,12 +1,13 @@
 import os
+import optparse
 class haddjob():
 
     def __init__(self,jobname,ncpu,targetdir):
         self.ncpu=ncpu
         self.targetdir=targetdir
         self.jobname=jobname
-        self.workdir="workdirhadd_"+self.jobname
         self.CWD=os.getcwd()
+        self.workdir=self.CWD+"/workdirhadd_"+self.jobname
         self.JdsPath=self.workdir+'/'+'runhadd.jds'
         self.ExePath=self.workdir+'/'+'runhadd.sh'
         self.OutPath=self.workdir+'/'+'runhadd.out'
