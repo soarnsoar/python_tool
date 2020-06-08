@@ -104,7 +104,7 @@ for cut in sorted(cuts):
                histoana.mydict[gr]['histo'][cut][var]['Sum'].SetBinContent(i,entry)
                histoana.mydict[gr]['histo'][cut][var]['Sum'].SetBinError(i,error)
 
-f=ROOT.TFile.Open(histofile,'UPDATE')
+f=ROOT.TFile.Open(histofile+'_'+shapename,'UPDATE')
 
 for cut in sorted(cuts):
    print cut
