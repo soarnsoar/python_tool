@@ -195,7 +195,7 @@ for nuis in nuisances:
       ##--End of Setbinerror--##
 
       
-      f=ROOT.TFile.Open(histofile,'UPDATE')
+      f=ROOT.TFile.Open(histofile+'_'+shapename,'UPDATE')
       #f.ls()
       #idx=0
       for cut in sorted(cuts):
