@@ -5,12 +5,14 @@ import ROOT
 import sys
 import optparse
 import glob
-
-
+sys.path.insert(0, "python_tool/")
+from CalMemoryUsage_condor import CalcMemory
+from AddRequestMemory import AddRequestMemory #def AddRequestMemory(jds,memory)
+from AddRequestDisk import AddRequestDisk
 CheckSocketErrorOpen=True
 CheckSocketErrorClose=True
-
-
+ResubMissingCheckPoint=True
+TightCheck=True
 
 ######preDefined functions######
 def check_file_das(JOBDIR,jobname):
@@ -50,6 +52,11 @@ def HasSocketError(errfile):
     lines=f.readlines()
     isFail=False
     for line in lines:
+        if 'Error' in line and 'TNetXNGFile' in line:
+            if TightCheck:
+                isFail=True
+                print "Error in TNetXNGFile"
+                break
         if 'Error' in line and '<TNetXNGFile::Open>' in line: 
             if CheckSocketErrorOpen: 
                 isFail=True
@@ -74,23 +81,40 @@ def isTerminated(logfile,jid):##005 (3294050.000.000) 02/28 18:31:21 Job termina
         if 'Job was aborted by the user' in line and str(jid) in line:
             isTerminated=True
             break
-        
+        if 'reconnection failed' in line and str(jid) in line:
+            isTerminated=True
     f.close()
     
     return isTerminated
 
 def isZombie(name,jid):##005 (3294050.000.000) 02/28 18:31:21 Job terminated.
+    if not ResubMissingCheckPoint:
+        return False
     logfile=name+'.log'
     f=open(logfile)
     lines=f.readlines()
     isZombie=False
-
+    ##--log file
     for line in lines:
         if 'Job was evicted' in line and str(jid) in line:
             isZombie=True
             break
     f.close()
-
+    ##--errfile ##basket's WriteBuffer failed
+    errfile=name+'.err'
+    if os.path.isfile(errfile):
+        if os.path.getsize(errfile)/1000000 > 10:
+            isZombie=True
+        else:
+            #print "errfile exist"
+            f=open(errfile)
+            lines=f.readlines()
+            for line in lines:
+                if "WriteBuffer failed" in line:
+                    print "[zombie]WriteBuffer failed"
+                    isZombie=True
+                break
+            f.close()
     return isZombie
 
 
@@ -114,7 +138,12 @@ def GetJid(jidfile):
 
     f.close()
     return jid
-
+def CheckMemory(name):
+    log=name+'.log'
+    jds=name+'.jds'
+    this_memory=CalcMemory(log)
+    AddRequestMemory(jds,this_memory)
+    AddRequestDisk(jds,'2000')
 ######END:preDefined functions######
 
 usage = 'usage: %prog [options]'
@@ -176,9 +205,10 @@ NOT_STARTED=[]
 NO_DONEFILE=[]
 for name in NAMES:
     print "##--Running",name
+    HasNoDone=False
     if not os.path.isfile(name+'.done'):
         NO_DONEFILE.append(name)
-
+        HasNoDone=True
     jid=GetJid(name+'.jid')
     if not jid:
         NOT_STARTED.append(name)
@@ -187,6 +217,10 @@ for name in NAMES:
     
     IsTerminated=isTerminated(name+'.log',jid)
     IsZombie=isZombie(name,jid)
+    if IsTerminated and HasNoDone:
+        print "--Fin But no Done file"
+        CheckMemory(name)
+        FAILS.append(name)
     if IsFail or IsZombie : FAILS.append(name)
     if not IsTerminated: NOT_FINISHED.append(name)
     if IsTerminated and not IsFail:SUCCESS.append(name)
@@ -336,7 +370,7 @@ for a in FAILS:
     if RemoveJob:do_condor_rm(jidfile)
 
 print "RESUB=",len(RESUB)
-for a in RESUB:
+for a in list(set(RESUB)):
     a=a.split('/')[-1]
 
     curdir=os.getcwd()
