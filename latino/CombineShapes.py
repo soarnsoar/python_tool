@@ -1,6 +1,6 @@
 import datetime
 begin_time = datetime.datetime.now()
-
+REMOVE_NEGATIVE=False
 ##---
 class dummy():##dummy
    def __init__(self):
@@ -89,18 +89,19 @@ this_dict={
    }
 }
 histoana=HistoParser(this_dict)
-for cut in sorted(cuts):
-   for var in sorted(variables):
-      for gr in this_dict:
-         Nbins=histoana.mydict[gr]['histo'][cut][var]['Sum'].GetNbinsX()
-         for i in range(0,Nbins+1):
+if REMOVE_NEGATIVE:
+   for cut in sorted(cuts):
+      for var in sorted(variables):
+         for gr in this_dict:
+            Nbins=histoana.mydict[gr]['histo'][cut][var]['Sum'].GetNbinsX()
+            for i in range(0,Nbins+1):
             
-            entry=histoana.mydict[gr]['histo'][cut][var]['Sum'].GetBinContent(i)
-            if entry<0:entry=0
+               entry=histoana.mydict[gr]['histo'][cut][var]['Sum'].GetBinContent(i)
+               if entry<0:entry=0
             
-            error=math.sqrt(entry)
-            if error==0:
-               error=math.sqrt(3)
+               #error=math.sqrt(entry)
+               #if error==0:
+               #   error=math.sqrt(3)
                histoana.mydict[gr]['histo'][cut][var]['Sum'].SetBinContent(i,entry)
                histoana.mydict[gr]['histo'][cut][var]['Sum'].SetBinError(i,error)
 
@@ -176,18 +177,19 @@ for nuis in nuisances:
 
 
       ##---Set staterr---##
-      for cut in sorted(cuts):
-         for var in sorted(variables):
-            for gr in this_dict:
-               Nbins=histoana.mydict[gr]['histo'][cut][var]['Sum'].GetNbinsX()
-               for i in range(0,Nbins+1):
+      if REMOVE_NEGATIVE:
+         for cut in sorted(cuts):
+            for var in sorted(variables):
+               for gr in this_dict:
+                  Nbins=histoana.mydict[gr]['histo'][cut][var]['Sum'].GetNbinsX()
+                  for i in range(0,Nbins+1):
             
-                  entry=histoana.mydict[gr]['histo'][cut][var]['Sum'].GetBinContent(i)
-                  if entry<0:entry=0
+                     entry=histoana.mydict[gr]['histo'][cut][var]['Sum'].GetBinContent(i)
+                     if entry<0:entry=0
                
-                  error=math.sqrt(entry)
-                  if error==0:
-                     error=math.sqrt(3)
+                     #error=math.sqrt(entry)
+                     #if error==0:
+                     #   error=math.sqrt(3)
                      histoana.mydict[gr]['histo'][cut][var]['Sum'].SetBinContent(i,entry)
                      histoana.mydict[gr]['histo'][cut][var]['Sum'].SetBinError(i,error)
                   
