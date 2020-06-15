@@ -27,6 +27,7 @@ parser.add_argument("-c", dest='conf')
 parser.add_argument("-f", dest='histofile')
 parser.add_argument("-s", dest='samplelist')
 parser.add_argument("-n", dest='shapename')
+parser.add_argument("-o","--newfile",   dest="newfile",action="store_true", help="make new outputfile",default=False)
 args=parser.parse_args()
 
 
@@ -36,6 +37,7 @@ conf=args.conf
 histofile=args.histofile
 samplelist=args.samplelist.split(',')
 shapename=args.shapename
+newfile=args.newfile
 ##--declare--##
 variables={}
 cuts={}
@@ -106,8 +108,11 @@ if REMOVE_NEGATIVE:
                histoana.mydict[gr]['histo'][cut][var]['Sum'].SetBinContent(i,entry)
                histoana.mydict[gr]['histo'][cut][var]['Sum'].SetBinError(i,error)
 
-#f=ROOT.TFile.Open(histofile+'_'+shapename,'UPDATE')
-f=ROOT.TFile.Open(histofile,'UPDATE')
+
+if newfile:
+   f=ROOT.TFile.Open(histofile+'_'+shapename,'UPDATE')
+else:
+   f=ROOT.TFile.Open(histofile,'UPDATE')
 
 for cut in sorted(cuts):
    print cut
@@ -122,6 +127,8 @@ for cut in sorted(cuts):
       #   ROOT.gDirectory.pwd()                                                                                                                                             
       #   ROOT.gDirectory.WriteObject(histoana.mydict['multiv']['histo'][cut][var]['Sum'],'histo_PseudoData')                                                               
       #   ROOT.gDirectory.ls()
+      if newfile:
+         f.mkdir(cut+'/'+var)
       f.cd(cut+'/'+var)
       #idx+=1                                                                                                                                                               
       #initdir=ROOT.gDirectory.CurrentDirectory()                                                                                                                           
@@ -199,9 +206,10 @@ for nuis in nuisances:
 
       ##--End of Setbinerror--##
 
-      
-      #f=ROOT.TFile.Open(histofile+'_'+shapename,'UPDATE')
-      f=ROOT.TFile.Open(histofile,'UPDATE')
+      if newfile:
+         f=ROOT.TFile.Open(histofile+'_'+shapename,'UPDATE')
+      else:
+         f=ROOT.TFile.Open(histofile,'UPDATE')
       #f.ls()
       #idx=0
       for cut in sorted(cuts):
@@ -217,7 +225,7 @@ for nuis in nuisances:
             #   ROOT.gDirectory.pwd()
             #   ROOT.gDirectory.WriteObject(histoana.mydict['multiv']['histo'][cut][var]['Sum'],'histo_PseudoData')
             #   ROOT.gDirectory.ls()
-            
+            if newfile:f.mkdir(cut+'/'+var)
             f.cd(cut+'/'+var)
             #idx+=1
             #initdir=ROOT.gDirectory.CurrentDirectory()
