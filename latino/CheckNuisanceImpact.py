@@ -19,9 +19,11 @@ import ROOT
 
 
 myfile=ROOT.TFile.Open(histofile)
-myshape_nom=myfile.Get(cutname+'/'+varname+'/'+'hist_'+process)
-myshape_up=myfile.Get(cutname+'/'+varname+'/'+'hist_'+process+'_'+nuisance+'Up')
-myshape_down=myfile.Get(cutname+'/'+varname+'/'+'hist_'+process+'_'+nuisance+'Down')
+path=cutname+'/'+varname+'/'+'histo_'+process
+print path
+myshape_nom=myfile.Get(path)
+myshape_up=myfile.Get(path+'_'+nuisance+'Up')
+myshape_down=myfile.Get(path+'_'+nuisance+'Down')
 
 nom=myshape_nom.Integral()
 up=myshape_up.Integral()
