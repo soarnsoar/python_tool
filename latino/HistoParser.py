@@ -13,6 +13,7 @@ class HistoParser():
 
     def ReadHistos(self):
         for gr in self.mydict:
+            print '[HistoParser] processing ',str(self.mydict[gr]['samples'])
             self.mydict[gr]['histo']={}
             filename=self.mydict[gr]['FileName']
             f=ROOT.TFile.Open(filename)
@@ -45,7 +46,7 @@ class HistoParser():
                             integrals+=self.mydict[gr]['histo'][cut][variable][sample].Integral()
                             #print "sum one by one=",integrals
                             #print "integral sum histo=",self.mydict[gr]['histo'][cut][variable]['Sum'].Integral()
-                            idx+=1
+                        idx+=1
                         
                     
             f.Close()
