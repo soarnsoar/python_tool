@@ -283,6 +283,40 @@ def CheckInputZombie(pypath):
     #FullSize
     return output,FullSize
 
+def CheckInputSize(pypath):
+    output=False
+    f=open(pypath)
+    ''' 
+    sourceFiles=[
+    "root://cms-xrdr.private.lo:2094///xrd/store/user/jhchoi/Latino/HWWNano//Fall2017_102X_nAODv4_Full2017v5/MCl1loose2017v5__MCCorr2017v5__JESup//nanoLatino_DYJetsToLL_M-50_HT-100to200__part0.root"
+    ]
+    '''
+    lines=f.readlines()
+    READ=False
+    LinesToRead=''
+    for line in lines:
+        if 'sourceFiles=' in line.strip():
+            READ=True
+        if READ:
+            LinesToRead+=line
+            if ']' in line:##end of sourceFiles
+                READ=False
+
+    f.close()
+
+
+    FullSize=0
+    exec(LinesToRead)
+    for s in sourceFiles:
+        if 'cms-xrd-global.cern.ch' in s:
+            continue
+
+        this_size=CheckFileSize(s)
+        FullSize+=float(this_size)
+        
+    return FullSize
+
+
 #def AddRequestMemory(jds,memory):
 #    ToAdd='request_memory = '+str(int(memory))+'MB \n'
 #    f=open(jds,'r')
@@ -431,6 +465,13 @@ for name in NAMES:
     Sample=info['Sample']
     part=info['part']
     input_s=info['input_s']
+
+
+
+
+
+
+
     if input_s=='':
 
         filepath=TREEDIR+'/'+Production+"/"+Step+"/"+"nanoLatino_"+Sample+"__"+part+".root"
@@ -488,6 +529,43 @@ for name in NAMES:
     #print "input_s="+input_s
     #path
     #/xrootd/store/user/jhchoi/Latino/HWWNano/Summer16_102X_nAODv4_Full2016v4/MCl1loose2016/nanoLatino_WZZ__part0.root
+
+
+    #Check if it's dryrun
+    jidpath=JOBDIR+"/"+name+".jid"
+    jdspath=JOBDIR+"/"+name+".jds"
+    pypath=JOBDIR+"/"+name+".py"
+    if os.path.isfile(jidpath): ##NOT submitted, need resubmission
+        f= open(jidpath)
+        lines=f.readlines()
+        DRYRUN=False
+        for line in lines:
+            if 'job(s) submitted to cluster' in line:
+                jid=line.split('job(s) submitted to cluster')[1].strip()
+                njob=line.split('job(s) submitted to cluster')[0].strip()
+            if 'DO NOT SUBMIT! DRY RUN' in line: ##not started . need to force to start it
+                DRYRUN=True
+        f.close()
+        if DRYRUN:
+            filesize=CheckInputSize(pypath)
+            if filesize > 600:
+                print "[MEMORY INCREASE] filesize = ",filesize
+                if filesize < 1000:
+                    AddRequestMemory(jdspath,float(filesize*10))
+                else:
+                    AddRequestMemory(jdspath,float(10000))
+                #print "a"
+                print "[jhchoi]Add requst disk"
+                AddRequestDisk(jdspath,'5G')
+            print "DRYRUN!"
+            TERMINATED=True
+            LIST_FAIL[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
+            continue
+
+
+
+
+
     if input_s=='':
         
         filepath=TREEDIR+'/'+Production+"/"+Step+"/"+"nanoLatino_"+Sample+"__"+part+".root"
@@ -578,12 +656,15 @@ for name in NAMES:
                 ZOMBIEINPUT=True
 
             
-            if filesize > 400:
+            if filesize > 600:
                 print "[MEMORY INCREASE] filesize = ",filesize
-                AddRequestMemory(jdspath,float(filesize*10))
+                if filesize < 1000:
+                    AddRequestMemory(jdspath,float(filesize*10))
+                else:
+                    AddRequestMemory(jdspath,float(10000))
                 #print "a"
-        print "[jhchoi]Add requst disk"
-        AddRequestDisk(jdspath,'3G')
+                print "[jhchoi]Add requst disk"
+                AddRequestDisk(jdspath,'5G')
         #if not os.path.isfile(logpath): os.system('touch '+logpath)
         if not os.path.isfile(jidpath): os.system('mv '+donepath+' '+jidpath)
         #if (not os.path.isfile(jidpath) and not os.path.isfile(donepath)):
@@ -621,6 +702,8 @@ for name in NAMES:
         if DRYRUN:
             print "DRYRUN!"
             TERMINATED=True
+            LIST_FAIL[name]={'Production':Production, 'Step':Step, 'Sample':Sample,'part':part, 'input_s':input_s}
+            continue
         #CheckFileSize
         if os.path.isfile(logpath):
             f=open(logpath)
@@ -645,11 +728,16 @@ for name in NAMES:
                 if 'Job disconnected, attempting to reconnect' in line and jid in line : 
                     print "[logZOMBIE]Job disconnected, attempting to reconnect"
                     ZOMBIE=True
-                    break
+                    #break
                 if 'Job was evicted' in line and jid in line : 
                     print "[logZOMBIE]Job was evicted"
                     ZOMBIE=True
-                    break
+                    #break
+
+                if 'Job executing on host' in line and str(jid) in line:
+                    print ">>job is restared"
+                    ZOMBIE=False
+
                 if 'Job was held' in line and jid in line:
                     print "[log hold]Job was held"
             ##if job is excuted
