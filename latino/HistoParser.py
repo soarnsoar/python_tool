@@ -13,6 +13,7 @@ class HistoParser():
 
     def ReadHistos(self):
         for gr in self.mydict:
+            print '[HistoParser] processing ',str(self.mydict[gr]['samples'])
             self.mydict[gr]['histo']={}
             filename=self.mydict[gr]['FileName']
             f=ROOT.TFile.Open(filename)
@@ -45,7 +46,7 @@ class HistoParser():
                             integrals+=self.mydict[gr]['histo'][cut][variable][sample].Integral()
                             #print "sum one by one=",integrals
                             #print "integral sum histo=",self.mydict[gr]['histo'][cut][variable]['Sum'].Integral()
-                            idx+=1
+                        idx+=1
                         
                     
             f.Close()
@@ -163,14 +164,24 @@ class HistoParser():
                         y0=self.mydict[gr]['histo'][cut][variable]['rmsDown'].GetBinContent(ibin)
                         y0err=self.mydict[gr]['histo'][cut][variable]['rmsDown'].GetBinError(ibin)
                         ##sigma = sqrt(sum[ (yi-y0)**2])
-                        SumOfDiff2=0
+                        #SumOfDiff2=0
+                        nMember=len(self.mydict[gr]['samples'])
+                        mysum=0
+                        mysum2=0
                         for sample in self.mydict[gr]['samples']: ##Make rms up/down
                             y=self.mydict[gr]['histo'][cut][variable][sample].GetBinContent(ibin)
-                            if y < 0 :continue
-                            yerr=self.mydict[gr]['histo'][cut][variable][sample].GetBinError(ibin)
-                            SumOfDiff2+=(y-y0)**2
-                        sigma=math.sqrt(SumOfDiff2)
-
+                            #if y < 0 :continue
+                            #yerr=self.mydict[gr]['histo'][cut][variable][sample].GetBinError(ibin)
+                            #SumOfDiff2+=(y-y0)**2
+                            mysum+=y
+                            mysum2+=y**2
+                        
+                        
+                        #sigma=math.sqrt(SumOfDiff2)
+                        myavg=float(mysum/nMember)
+                        myavg2=float(mysum2/nMember)
+                        sigma2=myavg2 - myavg**2
+                        sigma=math.sqrt(sigma2)
 
 
                         self.mydict[gr]['histo'][cut][variable]['rmsUp'].SetBinContent(ibin,y0+sigma)
