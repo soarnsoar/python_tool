@@ -10,9 +10,9 @@ from CalMemoryUsage_condor import CalcMemory
 from AddRequestMemory import AddRequestMemory #def AddRequestMemory(jds,memory)
 from AddRequestDisk import AddRequestDisk
 CheckSocketErrorOpen=True
-CheckSocketErrorClose=True
+CheckSocketErrorClose=False
 ResubMissingCheckPoint=True
-TightCheck=True
+#TightCheck=True
 
 ######preDefined functions######
 def check_file_das(JOBDIR,jobname):
@@ -53,17 +53,19 @@ def HasSocketError(errfile):
     isFail=False
     for line in lines:
         if 'Error' in line and 'TNetXNGFile' in line:
-            if TightCheck:
+            #if TightCheck:
+            if not 'TNetXNGFile::Close' in line:
                 isFail=True
                 print "Error in TNetXNGFile"
                 break
         if 'Error' in line and '<TNetXNGFile::Open>' in line: 
             if CheckSocketErrorOpen: 
                 isFail=True
-                print "socket error->",errfile
+                print "socket open error->",errfile
                 break
         if 'Error' in line and '<TNetXNGFile::Close>' in line:
-            if CheckSocketErrorClose: 
+            if CheckSocketErrorClose:
+                print "socket close error->",errfile
                 isFail=True
                 break
     f.close()
@@ -97,8 +99,11 @@ def isZombie(name,jid):##005 (3294050.000.000) 02/28 18:31:21 Job terminated.
     ##--log file
     for line in lines:
         if 'Job was evicted' in line and str(jid) in line:
+            print ">>Job was evicted"
             isZombie=True
-            break
+        if 'Job executing on host' in line and str(jid) in line:
+            print ">>job is restared"
+            isZombie=False
     f.close()
     ##--errfile ##basket's WriteBuffer failed
     errfile=name+'.err'
@@ -113,7 +118,11 @@ def isZombie(name,jid):##005 (3294050.000.000) 02/28 18:31:21 Job terminated.
                 if "WriteBuffer failed" in line:
                     print "[zombie]WriteBuffer failed"
                     isZombie=True
-                break
+                    break
+                if 'segmentation violation' in line:
+                    print ">>segmentation violation"
+                    isZombie=True
+                    break
             f.close()
     return isZombie
 
