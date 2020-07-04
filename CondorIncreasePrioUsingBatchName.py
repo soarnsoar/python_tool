@@ -8,13 +8,15 @@ def CondorIncreasePrioUsingBatchName(name,myprio):
     f=open('joblist.txt','r')
     lines=f.readlines()
 
+    name=name.split(',')
+
     for line in lines:
         info=line.split()
         jid=info[0]
         prio=info[4]
         batchname=info[5]
         #print jid,prio,batchname
-        if batchname==name:
+        if batchname in name:
             increase='condor_prio -p '+myprio+' '+jid
             print increase
             os.system(increase)
