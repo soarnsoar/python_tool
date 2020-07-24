@@ -6,9 +6,13 @@ def CondorRmBatchName(name):
 
     command="condor_rm -constraint 'JobBatchName == \""+name+"\"'"
     os.system(command)
+    command="condor_rm -f -constraint 'JobBatchName == \""+name+"\"'"
+    os.system(command)
 
 
 
 if __name__ == '__main__':
-    name=sys.argv[1]
-    CondorRmBatchName(name)
+    names=sys.argv[1]
+    names=names.split(',')
+    for name in names:
+        CondorRmBatchName(name)

@@ -9,9 +9,11 @@ sys.path.insert(0, "python_tool/")
 from CalMemoryUsage_condor import CalcMemory
 from AddRequestMemory import AddRequestMemory #def AddRequestMemory(jds,memory)
 from AddRequestDisk import AddRequestDisk
+from AddRequestCPU import AddRequestCPU
 CheckSocketErrorOpen=True
 CheckSocketErrorClose=False
 ResubMissingCheckPoint=True
+AcceptEvictedJob=True
 #TightCheck=True
 
 ######preDefined functions######
@@ -103,7 +105,9 @@ def isZombie(name,jid):##005 (3294050.000.000) 02/28 18:31:21 Job terminated.
             isZombie=True
         if 'Job executing on host' in line and str(jid) in line:
             print ">>job is restared"
-            isZombie=False
+            if AcceptEvictedJob:
+                isZombie=False
+            
     f.close()
     ##--errfile ##basket's WriteBuffer failed
     errfile=name+'.err'
@@ -152,6 +156,8 @@ def CheckMemory(name):
     jds=name+'.jds'
     this_memory=CalcMemory(log)
     AddRequestMemory(jds,this_memory)
+    if float(this_memory) > 5000:
+        AddRequestCPU(jds,2)
     AddRequestDisk(jds,'2000')
 ######END:preDefined functions######
 
@@ -187,12 +193,12 @@ NAMES=[]
 for form1 in FORMATS:
     for form2 in FORMATS:
         if form1==form2 : continue
-        FILES1=glob.glob(JOBDIR+"/*."+form1)
+        FILES1=glob.glob(JOBDIR+"/*/*."+form1)
         FILENAMES1=[]
         for a in FILES1: FILENAMES1.append(a.split(form1)[0].strip('.')) 
         
         
-        FILES2=glob.glob(JOBDIR+"/*."+form2)
+        FILES2=glob.glob(JOBDIR+"/*/*."+form2)
         FILENAMES2=[]
         for a in FILES2: FILENAMES2.append(a.split(form2)[0].strip('.'))
         
