@@ -45,6 +45,33 @@ def MakeEff(conf):
     f.write(str(Eff))
 
     return Eff
+def MakeStoB_DirBase(sdirs,bdirs,savedir): ##signal dir bkg dir
+    sdirlist=sdirs.split(',')
+    bdirlist=bdirs.split(',')
+
+    NSIG=0.
+    NBKG=0.
+    for sdir in sdirlist:
+        f=open(sdir+'/Integral.txt','r')
+        lines=f.readlines()
+        N=float(lines[0])
+        f.close()
+        NSIG+=N
+    for bdir in bdirlist:
+        f=open(bdir+'/Integral.txt','r')
+        lines=f.readlines()
+        N=float(lines[0])        
+        f.close()
+        NBKG+=N
+
+    StoB=NSIG/NBKG
+    os.system('mkdir -p '+savedir)
+    f=open(savedir+'/StoB.txt','w')
+    f.write(str(StoB))
+    f.close()
+    print "---",savedir,'---'
+    print StoB
+    return StoB
 
 if __name__ == '__main__':
 
