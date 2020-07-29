@@ -22,6 +22,29 @@ def MakeYield(conf):
     f=open(dirpath+'/Integral.txt','w')
     f.write(str(nEvent))
     f.close()
+    return nEvent
+
+def MakeEff(conf):
+    for k in conf:
+        exec(k+"=conf['"+k+"']")
+        
+    ##read yield
+    f=open(dirpath+'/Integral.txt','r')
+    lines=f.readlines()
+    
+    nEvent=float(lines[0])
+
+    f.close()
+
+    nGenEvent=float(lumi)*float(xsec)*1000
+    
+
+    Eff=nEvent/nGenEvent
+    print Eff
+    f=open(dirpath+'/Efficiency.txt','w')
+    f.write(str(Eff))
+
+    return Eff
 
 if __name__ == '__main__':
 
@@ -38,6 +61,7 @@ if __name__ == '__main__':
     parser.add_option("-r", "--runmode",   dest="runmode", help="runmode")
     parser.add_option("-c", "--cutname",   dest="cutname", help="cutname")
     parser.add_option("-x", "--xsec",   dest="xsec", help="xsec")
+    parser.add_option("-a", "--alias",   dest="alias", help="alias")
     
     (options, args) = parser.parse_args()
     #args=parser.parse_args()
@@ -48,6 +72,7 @@ if __name__ == '__main__':
     runmode=options.runmode
     cutname=options.cutname
     xsec=options.xsec
+    alias=options.alias
     #filepath="rootFile_2016_SigBkgEfficiency_Boosted_HMFull_V11_cprime1.0BRnew0.0_DeepAK8WP2p5_dMchi2Resolution_SR/hadd.root"
     #lumi=35.9*1000 ##in /pb (1 fb = 0.0001 pb, 1 fb-1 = 1000pb-1)
     #nGenEvent=(6.296492010211201e-06)*lumi
@@ -58,7 +83,7 @@ if __name__ == '__main__':
     #process="ggHWWlnuqq_M3000_S"
     
 
-    dirpath='EventEfficiency/Yield/'+process+'/'+cutname
+    dirpath='EventEfficiency/'+alias+'/Yield/'+process+'/'+cutname
     os.system('mkdir -p '+dirpath)
     conf={
         'filepath':filepath,
@@ -69,11 +94,13 @@ if __name__ == '__main__':
         'runmode':runmode,
         'dirpath':dirpath,
         'xsec':xsec,
+        'alias':alias
     }
     if runmode=='yield':
         MakeYield(conf)
     
-
+    if MakeEff=='efficiency':
+        MakeEff(conf)
 
     #histopath="/".join([cutname,vname,'histo_'+process])
     #print histopath
