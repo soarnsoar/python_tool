@@ -175,7 +175,7 @@ parser.add_option("-r","--want_resub_fail",   dest="want_resub_fail", help="want
 
 
 JOBDIR='mkShapes__semilep_XsecW'
-
+MAINDIR=os.getcwd()
 
 if len(sys.argv)>1:
     
@@ -374,9 +374,10 @@ print "nFAILS=",len(FAILS)
 
 for a in FAILS:
     RemoveJob=True
-    
-    a=a.split('/')[-1]
-    jidfile=JOBDIR+'/'+a+'.jid'
+    os.chdir(MAINDIR)
+    #a=a.split('/')[-1]
+    #jidfile=JOBDIR+'/'+a+'.jid'
+    jidfile=MAINDIR+'/'+a+'.jid'
     if not os.path.isfile(jidfile):
         jidfile=jidfile.replace('.jid','.done')
     if not os.path.isfile(jidfile):
@@ -386,10 +387,11 @@ for a in FAILS:
 
 print "RESUB=",len(RESUB)
 for a in list(set(RESUB)):
-    a=a.split('/')[-1]
+    #a=a.split('/')[-1]
 
     curdir=os.getcwd()
-    os.chdir(JOBDIR)
+    #os.chdir(JOBDIR)
+    os.chdir(MAINDIR)
     Nsub=len(glob.glob(a+'.log*'))
     for form in ['err','out','log','done','jid']:
         if os.path.isfile(a+'.'+form):  os.system('mv '+a+'.'+form+' '+a+'.'+form+'_'+str(Nsub) )
