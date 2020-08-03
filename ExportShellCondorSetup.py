@@ -43,7 +43,7 @@ def Export(WORKDIR,command,jobname,submit,ncpu,nretry=3):
     lines.append('echo "[ntry=$ntry]"')
     lines.append('if [ $myerr -eq 0 ]')
     lines.append('then')
-    lines.append('mv '+os.getcwd+'/'+WORKDIR+'/run.jid '+os.getcwd+'/'+WORKDIR+'/run.done')
+    lines.append('mv '+os.getcwd()+'/'+WORKDIR+'/run.jid '+os.getcwd()+'/'+WORKDIR+'/run.done')
     lines.append('fi')
     #WORKDIR+'/run.jid
     for line in lines:
