@@ -17,11 +17,12 @@ def Export(WORKDIR,command,jobname,submit,ncpu):
     lines.append(command)
     lines.append('ntry=1')
     lines.append('myerr=$?')
-    #lines.append('echo "err=$?"')
+    lines.append('echo "myerr=$myerr"')
     lines.append('while [ $myerr -ne 0 ]')
     lines.append('do')
     lines.append(command)
     lines.append('myerr=$?')
+    lines.append('echo "myerr=$myerr"')
     lines.append("ntry=`expr $ntry + 1`")
 
     lines.append('if [ $ntry -gt 10 ]')
