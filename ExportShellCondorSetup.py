@@ -14,7 +14,7 @@ def Export(WORKDIR,command,jobname,submit,ncpu):
     lines.append("eval `scramv1 ru -sh`")
     lines.append('cd '+os.getcwd()+'/'+WORKDIR)
     #lines.append('python run.py &> run.log')
-    lines.append(command)
+    lines.append('('+command+')')
     lines.append('ntry=1')
     lines.append('myerr=$?')
     lines.append('echo "myerr=$myerr"')
