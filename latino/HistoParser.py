@@ -112,6 +112,9 @@ class HistoParser():
                         Nbins=self.mydict[gr]['histo'][cut][variable]['symhessianasUp'].GetNbinsX()
                         break ##only for the first sample to get Nbins
                     #print Nbins
+                    
+                        
+                    
                     for ibin in range(0,Nbins+1):
                         
                         y0=self.mydict[gr]['histo'][cut][variable]['symhessianasDown'].GetBinContent(ibin)
@@ -188,6 +191,7 @@ class HistoParser():
                         self.mydict[gr]['histo'][cut][variable]['rmsDown'].SetBinContent(ibin,y0-sigma)
 
     def MakeWeightedAvgShape(self,AvgHistoName):
+        print '[MakeWeightedAvgShape]'
         for gr in self.mydict:
             for cut in self.mydict[gr]['cuts']:
                 for variable in self.mydict[gr]['variables']:
@@ -199,10 +203,14 @@ class HistoParser():
                         self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetDirectory(0)
                         self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetName(AvgHistoName)
                         self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetTitle(AvgHistoName)
+                        Nbins=self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].GetNbinsX()
                         break ##only for the first sample to get Nbins
                     #print Nbins
+                    ##--initialize
                     for ibin in range(0,Nbins+1):
-
+                        self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetBinContent(ibin,0)
+                        self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetBinError(ibin,0)
+                    for ibin in range(0,Nbins+1):
                         y0=self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].GetBinContent(ibin)
                         y0err=self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].GetBinError(ibin)
                         ##sigma = sqrt(sum[ (yi-y0)**2])
@@ -216,9 +224,15 @@ class HistoParser():
                         for sample in self.mydict[gr]['samples']: ##Make rms up/down
                             y=self.mydict[gr]['histo'][cut][variable][sample].GetBinContent(ibin)
                             yerr=self.mydict[gr]['histo'][cut][variable][sample].GetBinError(ibin)
-                            if y <= 0 :continue
-                            if yerr <= 0 :continue
-                            if yerr > y : continue ## too high error
+                            #print 'y=',y
+                            #print 'yerr=',yerr
+                            if y <= 0. :continue
+                            if yerr <= 0. :continue
+                            if 3*yerr > y : 
+                                print 'y=',y
+                                print 'yerr=',yerr
+                                continue ## remove low stat bin
+                            
                             w=1/yerr
                             
                             #SumOfDiff2+=(y-y0)**2
@@ -227,15 +241,18 @@ class HistoParser():
                             wsum+=w
                         
                         #sigma=math.sqrt(SumOfDiff2)
-                        myavg=float(ysum/wsum)
-                        sigma=math.sqrt(yerr2sum/wsum)
-                        ##lower variation <0
-                        lowvar=myavg-sigma
-                        if lowvar<0 :
-                            sigma=myavg
+                        myavg=0
+                        sigma=0
+                        if not wsum==0.:    
+                            myavg=float(ysum/wsum)
+                            sigma=math.sqrt(yerr2sum/wsum)
+                            ##lower variation <0
+                            lowvar=myavg-sigma
+                            if lowvar<0 :
+                                sigma=myavg
 
                         self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetBinContent(ibin,myavg)
-                        self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetBinContentError(ibin,sigma)
+                        self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetBinError(ibin,sigma)
 
     
 
