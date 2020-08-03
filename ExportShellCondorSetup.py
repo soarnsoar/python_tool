@@ -15,8 +15,20 @@ def Export(WORKDIR,command,jobname,submit,ncpu):
     lines.append('cd '+os.getcwd()+'/'+WORKDIR)
     #lines.append('python run.py &> run.log')
     lines.append(command)
+    lines.append('ntry=1')
+    lines.append('while [ $? -ne 0 ]')
+    lines.append('do')
+    lines.append(command)
+    lines.append("ntry=`expr $ntry + 1`")
+    lines.append('if [ $ntry -gt 10 ]')
+    lines.append('then')
+    lines.append('break')
+    lines.append('fi')
+    lines.append('done')
+    lines.append('echo "[ntry=$ntry]"')
     for line in lines:
         f.write(line+'\n')
+    
     f.close()
     os.system('chmod u+x '+WORKDIR+'/run.sh')
     ##--Jdsfile
