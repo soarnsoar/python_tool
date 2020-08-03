@@ -216,6 +216,7 @@ class HistoParser():
                             yerr=self.mydict[gr]['histo'][cut][variable][sample].GetBinError(ibin)
                             if y =< 0 :continue
                             if yerr =< 0 :continue
+                            if yerr > y : continue ## too high error
                             w=1/yerr
                             
                             #SumOfDiff2+=(y-y0)**2
