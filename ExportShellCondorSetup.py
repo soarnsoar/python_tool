@@ -1,7 +1,7 @@
 import optparse
 import os
 
-def Export(WORKDIR,command,jobname,submit,ncpu):
+def Export(WORKDIR,command,jobname,submit,ncpu,nretry=3):
     command='('+command+')'
     os.system('mkdir -p '+WORKDIR)
     f=open(WORKDIR+'/run.sh','w')
@@ -35,12 +35,17 @@ def Export(WORKDIR,command,jobname,submit,ncpu):
     lines.append('echo "myerr=$myerr"')
 
 
-    lines.append('if [ $ntry -gt 10 ]')
+    lines.append('if [ $ntry -gt '+nretry+' ]')
     lines.append('then')
     lines.append('break')
     lines.append('fi')
     lines.append('done')
     lines.append('echo "[ntry=$ntry]"')
+    lines.append('if [ $myerr -eq 0 ]')
+    lines.append('then')
+    lines.append('mv '+os.getcwd+'/'+WORKDIR+'/run.jid '+os.getcwd+'/'+WORKDIR+'/run.done')
+    lines.append('fi')
+    #WORKDIR+'/run.jid
     for line in lines:
         f.write(line+'\n')
     
