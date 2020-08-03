@@ -197,6 +197,8 @@ class HistoParser():
                     for sample in self.mydict[gr]['samples']:
                         self.mydict[gr]['histo'][cut][variable]['WeightedAvg']=self.mydict[gr]['histo'][cut][variable][sample].Clone()
                         self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetDirectory(0)
+                        self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetName(AvgHistoName)
+                        self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetTitle(AvgHistoName)
                         break ##only for the first sample to get Nbins
                     #print Nbins
                     for ibin in range(0,Nbins+1):
@@ -214,8 +216,8 @@ class HistoParser():
                         for sample in self.mydict[gr]['samples']: ##Make rms up/down
                             y=self.mydict[gr]['histo'][cut][variable][sample].GetBinContent(ibin)
                             yerr=self.mydict[gr]['histo'][cut][variable][sample].GetBinError(ibin)
-                            if y =< 0 :continue
-                            if yerr =< 0 :continue
+                            if y <= 0 :continue
+                            if yerr <= 0 :continue
                             if yerr > y : continue ## too high error
                             w=1/yerr
                             
