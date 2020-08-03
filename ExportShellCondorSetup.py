@@ -35,7 +35,7 @@ def Export(WORKDIR,command,jobname,submit,ncpu,nretry=3):
     lines.append('echo "myerr=$myerr"')
 
 
-    lines.append('if [ $ntry -gt '+nretry+' ]')
+    lines.append('if [ $ntry -gt '+str(nretry)+' ]')
     lines.append('then')
     lines.append('break')
     lines.append('fi')
