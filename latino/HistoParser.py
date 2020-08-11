@@ -203,8 +203,9 @@ class HistoParser():
                     Nbins=-1
                     for sample in self.mydict[gr]['samples']:
                         self.mydict[gr]['histo'][cut][variable]['WeightedAvg']=self.mydict[gr]['histo'][cut][variable][sample].Clone()
-                        self.mydict[gr]['histo'][cut][variable]['WeightedAvg']=self.mydict[gr]['histo'][cut][variable][sample].SetEntries(0)
                         self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetDirectory(0)
+                        self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetEntries(0)
+                        #self.mydict[gr]['histo'][cut][variable]['WeightedAvg']=self.mydict[gr]['histo'][cut][variable][sample].SetEntries(0)
                         self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetName(AvgHistoName)
                         self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetTitle(AvgHistoName)
                         Nbins=self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].GetNbinsX()
