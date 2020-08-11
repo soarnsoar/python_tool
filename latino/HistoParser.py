@@ -234,10 +234,10 @@ class HistoParser():
                             #print 'yerr=',yerr
                             if y <= 0. :continue
                             if yerr <= 0. :continue
-                            if 3*yerr > y : 
+                            #if 3*yerr > y : 
                                 #print 'y=',y
                                 #print 'yerr=',yerr
-                                continue ## remove low stat bin
+                                #continue ## remove low stat bin
                             
                             w=1/yerr
                             
