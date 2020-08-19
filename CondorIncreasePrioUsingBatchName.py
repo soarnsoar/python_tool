@@ -12,13 +12,14 @@ def CondorIncreasePrioUsingBatchName(name,myprio):
 
     for line in lines:
         info=line.split()
+        #print info
         jid=info[0]
-        prio=info[4]
-        batchname=info[5]
-        #print jid,prio,batchname
+        prio=info[5]
+        batchname=info[6]
+        print jid,prio,batchname
         if batchname in name:
             increase='condor_prio -p '+myprio+' '+jid
-            print increase
+            #print increase
             os.system(increase)
             #break
 
