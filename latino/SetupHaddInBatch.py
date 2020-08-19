@@ -33,7 +33,7 @@ class haddjob():
         self.exe.append("cd "+self.CMSSW_BASE)
         self.exe.append("eval `scramv1 ru -sh`")
         self.exe.append('cd '+self.targetdir)
-        self.exe.append('(mkdir -p temp/;StartTime=$(date +%s);hadd -j '+str(self.ncpu)+' -d temp/ hadd.root *.root;EndTime=$(date +%s);echo "runtime : $(($EndTime - $StartTime)) sec";)>hadd.log')
+        self.exe.append('(mkdir -p temp/;StartTime=$(date +%s);hadd -f -j '+str(self.ncpu)+' -d temp/ hadd.root *.root;EndTime=$(date +%s);echo "runtime : $(($EndTime - $StartTime)) sec";)>hadd.log')
     def SetJds(self):
         self.jds=[]
         self.jds.append('executable = '+self.ExePath)

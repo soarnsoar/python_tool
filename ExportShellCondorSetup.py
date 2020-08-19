@@ -1,7 +1,8 @@
 import optparse
 import os
 
-def Export(WORKDIR,command,jobname,submit,ncpu):
+def Export(WORKDIR,command,jobname,submit,ncpu,nretry=3):
+    command='('+command+')'
     os.system('mkdir -p '+WORKDIR)
     f=open(WORKDIR+'/run.sh','w')
     lines=[]
@@ -14,9 +15,40 @@ def Export(WORKDIR,command,jobname,submit,ncpu):
     lines.append("eval `scramv1 ru -sh`")
     lines.append('cd '+os.getcwd()+'/'+WORKDIR)
     #lines.append('python run.py &> run.log')
+    #lines.append(command+'||myerr=$?')
     lines.append(command)
+    lines.append('myerr=$?')
+    #lines.append('if [ "$myerr"=="" ]')
+    #lines.append('then')
+    #lines.append('myerr=0')
+    #lines.append('fi')
+    lines.append('ntry=1')
+    lines.append('echo "myerr=$myerr"')
+    lines.append('while [ $myerr -ne 0 ]')
+    lines.append('do')
+    lines.append("ntry=`expr $ntry + 1`")
+    #lines.append(command+'||myerr=$?')   
+    lines.append(command)
+    lines.append('myerr=$?')
+    lines.append('echo ntry="$ntry"') 
+    #lines.append('myerr=$?')
+    lines.append('echo "myerr=$myerr"')
+
+
+    lines.append('if [ $ntry -gt '+str(nretry)+' ]')
+    lines.append('then')
+    lines.append('break')
+    lines.append('fi')
+    lines.append('done')
+    lines.append('echo "[ntry=$ntry]"')
+    lines.append('if [ $myerr -eq 0 ]')
+    lines.append('then')
+    lines.append('mv '+os.getcwd()+'/'+WORKDIR+'/run.jid '+os.getcwd()+'/'+WORKDIR+'/run.done')
+    lines.append('fi')
+    #WORKDIR+'/run.jid
     for line in lines:
         f.write(line+'\n')
+    
     f.close()
     os.system('chmod u+x '+WORKDIR+'/run.sh')
     ##--Jdsfile
