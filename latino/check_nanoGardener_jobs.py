@@ -1056,7 +1056,7 @@ else:
     total_resub=max(0,int(Nresub)-int(Nmyjob))
 
 print "Number of Resubmission===>",total_resub
-LIST_RESUB=list(set(LIST_RESUB))
+#LIST_RESUB=list(set(LIST_RESUB))
 print "len(LIST_RESUB)=",len(LIST_RESUB)
 
 
