@@ -366,20 +366,28 @@ if 'Summer16_102X_nAODv4' in JOBDIR:
     Latino_sampleFile='Summer16_102X_nAODv4.py'
 elif 'Summer16_102X_nAODv5' in JOBDIR:
     Latino_sampleFile='Summer16_102X_nAODv5.py'
+elif 'Summer16_102X_nAODv7' in JOBDIR:
+    Latino_sampleFile='Summer16_102X_nAODv7.py'
 elif 'Run2016_102X_nAODv4' in JOBDIR:
     Latino_sampleFile='Run2016_102X_nAODv4.py'
 elif 'Run2016_102X_nAODv5' in JOBDIR:
     Latino_sampleFile='Run2016_102X_nAODv5.py'
+elif 'Run2016_102X_nAODv7' in JOBDIR:
+    Latino_sampleFile='Run2016_102X_nAODv7.py'
 elif 'Fall2017_102X_nAODv4' in JOBDIR:
     Latino_sampleFile='fall17_102X_nAODv4.py'
 elif 'Fall2017_102X_nAODv5' in JOBDIR:
     Latino_sampleFile='fall17_102X_nAODv5.py'
 elif 'Fall2017_102X_nAODv5' in JOBDIR:
     Latino_sampleFile='fall17_102X_nAODv5.py'
+elif 'Fall2017_102X_nAODv7' in JOBDIR:
+    Latino_sampleFile='fall17_102X_nAODv7.py'
 elif 'Run2017_102X_nAODv4' in JOBDIR:
     Latino_sampleFile='Run2017_102X_nAODv4.py'
 elif 'Run2017_102X_nAODv5' in JOBDIR:
     Latino_sampleFile='Run2017_102X_nAODv5.py'
+elif 'Run2017_102X_nAODv7' in JOBDIR:
+    Latino_sampleFile='Run2017_102X_nAODv7.py'
 elif 'NanoGardening__Run2018_102X_nAODv4_14Dec' in JOBDIR:
     Latino_sampleFile='Run2018_102X_nAODv4_14Dec2018.py'
 elif 'NanoGardening__Autumn18_102X_nAODv4_GTv16' in JOBDIR:
@@ -388,10 +396,14 @@ elif 'NanoGardening__Autumn18_102X_nAODv5_Full2018v5' in JOBDIR:
     Latino_sampleFile='Autumn18_102X_nAODv5.py'
 elif 'NanoGardening__Autumn18_102X_nAODv6_Full2018v6' in JOBDIR:
     Latino_sampleFile='Autumn18_102X_nAODv6.py'
+elif 'NanoGardening__Autumn18_102X_nAODv7_Full2018v7' in JOBDIR:
+    Latino_sampleFile='Autumn18_102X_nAODv7.py'
 elif 'NanoGardening__Run2018_102X_nAODv5_Full2018v5' in JOBDIR:
     Latino_sampleFile='Run2018_102X_nAODv5.py'
 elif 'NanoGardening__Run2018_102X_nAODv6_Full2018v6' in JOBDIR:
     Latino_sampleFile='Run2018_102X_nAODv6.py'
+elif 'NanoGardening__Run2018_102X_nAODv7_Full2018v7' in JOBDIR:
+    Latino_sampleFile='Run2018_102X_nAODv7.py'
 if Latino_sampleFile=='': 
     print "!!None matched sample python in Latino path!!"
     exit()
@@ -1044,7 +1056,7 @@ else:
     total_resub=max(0,int(Nresub)-int(Nmyjob))
 
 print "Number of Resubmission===>",total_resub
-LIST_RESUB=list(set(LIST_RESUB))
+#LIST_RESUB=list(set(LIST_RESUB))
 print "len(LIST_RESUB)=",len(LIST_RESUB)
 
 
