@@ -135,7 +135,7 @@ class HistoParser():
                             else: 
                                 continue
                         ##alpha_s
-                        plus_sample=self.mydict[gr]['samples'][-2]
+                        plus_sample=self.mydict[gr]['samples'][-1]
                         yplus=self.mydict[gr]['histo'][cut][variable][plus_sample].GetBinContent(ibin)
                         minus_sample=self.mydict[gr]['samples'][-2]
                         yminus=self.mydict[gr]['histo'][cut][variable][minus_sample].GetBinContent(ibin)
@@ -192,6 +192,79 @@ class HistoParser():
 
                         self.mydict[gr]['histo'][cut][variable]['rmsUp'].SetBinContent(ibin,y0+sigma)
                         self.mydict[gr]['histo'][cut][variable]['rmsDown'].SetBinContent(ibin,y0-sigma)
+
+
+    def MakeRmsAsShape(self,rmsasHistoName):
+        for gr in self.mydict:
+            for cut in self.mydict[gr]['cuts']:
+                for variable in self.mydict[gr]['variables']:
+                    ###For this cut, this variable
+                    ###iterate each shape
+                    Nbins=-1
+                    for sample in self.mydict[gr]['samples']:
+                        self.mydict[gr]['histo'][cut][variable]['rmsasUp']=self.mydict[gr]['histo'][cut][variable][sample].Clone()
+                        self.mydict[gr]['histo'][cut][variable]['rmsasUp'].SetDirectory(0)
+                        self.mydict[gr]['histo'][cut][variable]['rmsasUp'].SetName(rmsasHistoName+"Up")
+                        self.mydict[gr]['histo'][cut][variable]['rmsasUp'].SetTitle(rmsasHistoName+"Up")
+
+                        self.mydict[gr]['histo'][cut][variable]['rmsasDown']=self.mydict[gr]['histo'][cut][variable][sample].Clone()
+                        self.mydict[gr]['histo'][cut][variable]['rmsasDown'].SetDirectory(0)
+                        self.mydict[gr]['histo'][cut][variable]['rmsasDown'].SetName(rmsasHistoName+"Down")
+                        self.mydict[gr]['histo'][cut][variable]['rmsasDown'].SetTitle(rmsasHistoName+"Down")
+                        Nbins=self.mydict[gr]['histo'][cut][variable]['rmsasUp'].GetNbinsX()
+                        break ##only for the first sample to get Nbins
+                    #print Nbins
+                    for ibin in range(0,Nbins+1):
+
+                        y0=self.mydict[gr]['histo'][cut][variable]['rmsasDown'].GetBinContent(ibin)
+                        y0err=self.mydict[gr]['histo'][cut][variable]['rmsasDown'].GetBinError(ibin)
+                        ##sigma = sqrt(sum[ (yi-y0)**2])
+                        #SumOfDiff2=0
+                        nMember=len(self.mydict[gr]['samples'])
+                        mysum=0
+                        mysum2=0
+                        Nsample=len(self.mydict[gr]['samples'])
+                        #for isample, sample in enumerate(self.mydict[gr]['samples']): ##Make symhessianas up/down
+                        #    y=self.mydict[gr]['histo'][cut][variable][sample].GetBinContent(ibin)
+                        #    if y < 0 : continue
+                        #    yerr=self.mydict[gr]['histo'][cut][variable][sample].GetBinError(ibin)
+                        #    if isample < Nsample-2:
+                        #        SumOfDiff2+=(y-y0)**2
+                        #    else:
+                        #        continue
+
+                        #for sample in self.mydict[gr]['samples']: ##Make rmsas up/down
+                        for isample, sample in enumerate(self.mydict[gr]['samples']):
+                            y=self.mydict[gr]['histo'][cut][variable][sample].GetBinContent(ibin)
+                            #if y < 0 :continue
+                            #yerr=self.mydict[gr]['histo'][cut][variable][sample].GetBinError(ibin)
+                            #SumOfDiff2+=(y-y0)**2
+                            if isample < Nsample-2:
+                                mysum+=y
+                                mysum2+=y**2
+                            else:
+                                continue
+                        
+                        
+                        #sigma=math.sqrt(SumOfDiff2)
+                        myavg=float(mysum/nMember)
+                        myavg2=float(mysum2/nMember)
+                        sigma2=myavg2 - myavg**2
+                        sigma=math.sqrt(sigma2)
+
+                        ##alpha_s
+                        plus_sample=self.mydict[gr]['samples'][-1]
+                        yplus=self.mydict[gr]['histo'][cut][variable][plus_sample].GetBinContent(ibin)
+                        minus_sample=self.mydict[gr]['samples'][-2]
+                        yminus=self.mydict[gr]['histo'][cut][variable][minus_sample].GetBinContent(ibin)
+
+                        sigma_as = 0.5*(yplus-yminus)
+                        sigma_total=math.sqrt(sigma2 + sigma_as**2)
+
+
+                        self.mydict[gr]['histo'][cut][variable]['rmsasUp'].SetBinContent(ibin,y0+sigma_total)
+                        self.mydict[gr]['histo'][cut][variable]['rmsasDown'].SetBinContent(ibin,y0-sigma_total)
+
 
     def MakeWeightedAvgShape(self,AvgHistoName):
         print '[MakeWeightedAvgShape]'
