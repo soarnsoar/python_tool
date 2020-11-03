@@ -15,6 +15,7 @@ sys.path.insert(0, scriptpath+"../")
 from CalMemoryUsage_condor import CalcMemory ##input = logpath+<logfile>.log
 from AddRequestMemory import AddRequestMemory
 from AddRequestDisk import AddRequestDisk
+from AddRequestCPU import AddRequestCPU
 from datetime import datetime
 from LastModifiedTime import LastModifiedTime
 from GetCondorSpace import GetCondorSpace
@@ -31,6 +32,7 @@ parser.add_option("-r","--resub_fail",   dest="resub_fail", help="want to resubm
 parser.add_option("-c","--change_workdir",   dest="chworkdir", help="want to change workdir from home to scratch?")
 parser.add_option("-N","--nresub",   dest="Nresub", help="number of jobs for resub" )
 parser.add_option("-p","--passzombie",   dest="passzombie", help="pass zombie scan step", default=False, action="store_true" )
+parser.add_option("-s","--samplepy",   dest="Latino_samplepyArg", help="Latino_samplepy", default='', )
 
 (options, args) = parser.parse_args()
 
@@ -356,60 +358,64 @@ TREEDIR='/xrootd/store/user/jhchoi/Latino/HWWNano/'
 #JOBDIR='NanoGardening__Fall2017_102X_nAODv4_Full2017v5'
 ###Setup#### 
 Latino_sampleDir=''
+#Latino_samplepyArg=
 if os.getenv('CMSSW_BASE')=='': 
     print "!!Need cmsenv!!"
     exit()
-else :
-    Latino_sampleDir=os.getenv('CMSSW_BASE')+'/src/LatinoAnalysis/NanoGardener/python/framework/samples/'
-Latino_sampleFile=''
-if 'Summer16_102X_nAODv4' in JOBDIR:
-    Latino_sampleFile='Summer16_102X_nAODv4.py'
-elif 'Summer16_102X_nAODv5' in JOBDIR:
-    Latino_sampleFile='Summer16_102X_nAODv5.py'
-elif 'Summer16_102X_nAODv7' in JOBDIR:
-    Latino_sampleFile='Summer16_102X_nAODv7.py'
-elif 'Run2016_102X_nAODv4' in JOBDIR:
-    Latino_sampleFile='Run2016_102X_nAODv4.py'
-elif 'Run2016_102X_nAODv5' in JOBDIR:
-    Latino_sampleFile='Run2016_102X_nAODv5.py'
-elif 'Run2016_102X_nAODv7' in JOBDIR:
-    Latino_sampleFile='Run2016_102X_nAODv7.py'
-elif 'Fall2017_102X_nAODv4' in JOBDIR:
-    Latino_sampleFile='fall17_102X_nAODv4.py'
-elif 'Fall2017_102X_nAODv5' in JOBDIR:
-    Latino_sampleFile='fall17_102X_nAODv5.py'
-elif 'Fall2017_102X_nAODv5' in JOBDIR:
-    Latino_sampleFile='fall17_102X_nAODv5.py'
-elif 'Fall2017_102X_nAODv7' in JOBDIR:
-    Latino_sampleFile='fall17_102X_nAODv7.py'
-elif 'Run2017_102X_nAODv4' in JOBDIR:
-    Latino_sampleFile='Run2017_102X_nAODv4.py'
-elif 'Run2017_102X_nAODv5' in JOBDIR:
-    Latino_sampleFile='Run2017_102X_nAODv5.py'
-elif 'Run2017_102X_nAODv7' in JOBDIR:
-    Latino_sampleFile='Run2017_102X_nAODv7.py'
-elif 'NanoGardening__Run2018_102X_nAODv4_14Dec' in JOBDIR:
-    Latino_sampleFile='Run2018_102X_nAODv4_14Dec2018.py'
-elif 'NanoGardening__Autumn18_102X_nAODv4_GTv16' in JOBDIR:
-    Latino_sampleFile='Autumn18_102X_nAODv4_v16.py'
-elif 'NanoGardening__Autumn18_102X_nAODv5_Full2018v5' in JOBDIR:
-    Latino_sampleFile='Autumn18_102X_nAODv5.py'
-elif 'NanoGardening__Autumn18_102X_nAODv6_Full2018v6' in JOBDIR:
-    Latino_sampleFile='Autumn18_102X_nAODv6.py'
-elif 'NanoGardening__Autumn18_102X_nAODv7_Full2018v7' in JOBDIR:
-    Latino_sampleFile='Autumn18_102X_nAODv7.py'
-elif 'NanoGardening__Run2018_102X_nAODv5_Full2018v5' in JOBDIR:
-    Latino_sampleFile='Run2018_102X_nAODv5.py'
-elif 'NanoGardening__Run2018_102X_nAODv6_Full2018v6' in JOBDIR:
-    Latino_sampleFile='Run2018_102X_nAODv6.py'
-elif 'NanoGardening__Run2018_102X_nAODv7_Full2018v7' in JOBDIR:
-    Latino_sampleFile='Run2018_102X_nAODv7.py'
-if Latino_sampleFile=='': 
-    print "!!None matched sample python in Latino path!!"
-    exit()
+if options.Latino_samplepyArg=='':
+    Latino_sampleDir=os.getenv('CMSSW_BASE')+options.Latino_sampleDirArg
+    #'/src/LatinoAnalysis/NanoGardener/python/framework/samples/'
+    Latino_sampleFile=''
+    if 'Summer16_102X_nAODv4' in JOBDIR:
+        Latino_sampleFile='Summer16_102X_nAODv4.py'
+    elif 'Summer16_102X_nAODv5' in JOBDIR:
+        Latino_sampleFile='Summer16_102X_nAODv5.py'
+    elif 'Summer16_102X_nAODv7' in JOBDIR:
+        Latino_sampleFile='Summer16_102X_nAODv7.py'
+    elif 'Run2016_102X_nAODv4' in JOBDIR:
+        Latino_sampleFile='Run2016_102X_nAODv4.py'
+    elif 'Run2016_102X_nAODv5' in JOBDIR:
+        Latino_sampleFile='Run2016_102X_nAODv5.py'
+    elif 'Run2016_102X_nAODv7' in JOBDIR:
+        Latino_sampleFile='Run2016_102X_nAODv7.py'
+    elif 'Fall2017_102X_nAODv4' in JOBDIR:
+        Latino_sampleFile='fall17_102X_nAODv4.py'
+    elif 'Fall2017_102X_nAODv5' in JOBDIR:
+        Latino_sampleFile='fall17_102X_nAODv5.py'
+    elif 'Fall2017_102X_nAODv5' in JOBDIR:
+        Latino_sampleFile='fall17_102X_nAODv5.py'
+    elif 'Fall2017_102X_nAODv7' in JOBDIR:
+        Latino_sampleFile='fall17_102X_nAODv7.py'
+    elif 'Run2017_102X_nAODv4' in JOBDIR:
+        Latino_sampleFile='Run2017_102X_nAODv4.py'
+    elif 'Run2017_102X_nAODv5' in JOBDIR:
+        Latino_sampleFile='Run2017_102X_nAODv5.py'
+    elif 'Run2017_102X_nAODv7' in JOBDIR:
+        Latino_sampleFile='Run2017_102X_nAODv7.py'
+    elif 'NanoGardening__Run2018_102X_nAODv4_14Dec' in JOBDIR:
+        Latino_sampleFile='Run2018_102X_nAODv4_14Dec2018.py'
+    elif 'NanoGardening__Autumn18_102X_nAODv4_GTv16' in JOBDIR:
+        Latino_sampleFile='Autumn18_102X_nAODv4_v16.py'
+    elif 'NanoGardening__Autumn18_102X_nAODv5_Full2018v5' in JOBDIR:
+        Latino_sampleFile='Autumn18_102X_nAODv5.py'
+    elif 'NanoGardening__Autumn18_102X_nAODv6_Full2018v6' in JOBDIR:
+        Latino_sampleFile='Autumn18_102X_nAODv6.py'
+    elif 'NanoGardening__Autumn18_102X_nAODv7_Full2018v7' in JOBDIR:
+        Latino_sampleFile='Autumn18_102X_nAODv7.py'
+    elif 'NanoGardening__Run2018_102X_nAODv5_Full2018v5' in JOBDIR:
+        Latino_sampleFile='Run2018_102X_nAODv5.py'
+    elif 'NanoGardening__Run2018_102X_nAODv6_Full2018v6' in JOBDIR:
+        Latino_sampleFile='Run2018_102X_nAODv6.py'
+    elif 'NanoGardening__Run2018_102X_nAODv7_Full2018v7' in JOBDIR:
+        Latino_sampleFile='Run2018_102X_nAODv7.py'
+    if Latino_sampleFile=='': 
+        print "!!None matched sample python in Latino path!!"
+        exit()
 
-sample_py=Latino_sampleDir+"/"+Latino_sampleFile
-
+    
+    sample_py=Latino_sampleDir+"/"+Latino_sampleFile
+else:
+    sample_py=options.Latino_samplepyArg
 
 VETO_KEYWORDS=[]
 TAG=[]
@@ -561,6 +567,7 @@ for name in NAMES:
         if DRYRUN:
             filesize=CheckInputSize(pypath)
             if filesize > 600:
+                AddRequestCPU(jdspath,2)
                 print "[MEMORY INCREASE] filesize = ",filesize
                 if filesize < 1000:
                     AddRequestMemory(jdspath,float(filesize*10))
@@ -669,11 +676,14 @@ for name in NAMES:
 
             
             if filesize > 600:
+                print "add cpu 2"
+                AddRequestCPU(jdspath,2)
                 print "[MEMORY INCREASE] filesize = ",filesize
                 if filesize < 1000:
                     AddRequestMemory(jdspath,float(filesize*10))
                 else:
                     AddRequestMemory(jdspath,float(10000))
+                
                 #print "a"
                 print "[jhchoi]Add requst disk"
                 AddRequestDisk(jdspath,'5G')
