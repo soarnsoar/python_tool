@@ -567,12 +567,14 @@ for name in NAMES:
         if DRYRUN:
             filesize=CheckInputSize(pypath)
             if filesize > 600:
-                AddRequestCPU(jdspath,2)
+                AddRequestCPU(jdspath,3)
                 print "[MEMORY INCREASE] filesize = ",filesize
                 if filesize < 1000:
                     AddRequestMemory(jdspath,float(filesize*10))
+                    
                 else:
                     AddRequestMemory(jdspath,float(10000))
+
                 #print "a"
                 print "[jhchoi]Add requst disk"
                 AddRequestDisk(jdspath,'5G')
@@ -677,7 +679,7 @@ for name in NAMES:
             
             if filesize > 600:
                 print "add cpu 2"
-                AddRequestCPU(jdspath,2)
+                AddRequestCPU(jdspath,3)
                 print "[MEMORY INCREASE] filesize = ",filesize
                 if filesize < 1000:
                     AddRequestMemory(jdspath,float(filesize*10))
