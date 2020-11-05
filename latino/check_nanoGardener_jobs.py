@@ -363,7 +363,7 @@ if os.getenv('CMSSW_BASE')=='':
     print "!!Need cmsenv!!"
     exit()
 if options.Latino_samplepyArg=='':
-    Latino_sampleDir=os.getenv('CMSSW_BASE')+options.Latino_sampleArg
+    Latino_sampleDir=os.getenv('CMSSW_BASE')+options.Latino_samplepyArg
     #'/src/LatinoAnalysis/NanoGardener/python/framework/samples/'
     Latino_sampleFile=''
     if 'Summer16_102X_nAODv4' in JOBDIR:
