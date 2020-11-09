@@ -792,7 +792,7 @@ for name in NAMES:
             f=open(errpath)
             lines=f.readlines()
             for line in lines:
-                #if 'Error in <TFile::WriteBuffer>' in line : ZOMBIE=True
+                if 'Error in <TFile::WriteBuffer>' in line : ZOMBIE=True
                 if 'SysError in <TFile::ReadBuffer>: error reading from file' in line : 
                     print "[err ZOMBIE]SysError in <TFile::ReadBuffer>: error reading from file"
                     ZOMBIE=True
