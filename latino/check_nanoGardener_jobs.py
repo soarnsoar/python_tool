@@ -1097,14 +1097,16 @@ for a in LIST_RESUB:
     os.chdir(JOBDIR)
 
 
-    #this_memory = 0
+    this_memory = 0
+    logpath=a+'.log'
+    jdspath=a+'.jds'
     #print "logpath->",a+'.log'
-    #if os.path.isfile(a+'.log') : 
-    #    this_memory=CalcMemory(a+'.log')##inMB
-    #    print "[MEMORY USAGE CHECK]",this_memory,"MB"
-    #if this_memory > 2900:
-    #    print "[JOB]Over 1000MB Memory, add request memory to jds"
-    #    AddRequestMemory(a+'.jds')
+    if os.path.isfile(logpath) : 
+        this_memory=CalcMemory(logpath)##inMB
+        print "[MEMORY USAGE CHECK]",this_memory,"MB"
+        if this_memory > 2900:
+            print "[JOB]Over 1000MB Memory, add request memory to jds"
+            AddRequestMemory(jdspath,float(this_memory))
 
 
 
