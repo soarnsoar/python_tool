@@ -566,7 +566,7 @@ for name in NAMES:
         f.close()
         if DRYRUN:
             filesize=CheckInputSize(pypath)
-            if filesize > 600:
+            if filesize > 500:
                 AddRequestCPU(jdspath,3)
                 print "[MEMORY INCREASE] filesize = ",filesize
                 if filesize < 1000:
@@ -677,7 +677,7 @@ for name in NAMES:
                 ZOMBIEINPUT=True
 
             
-            if filesize > 600:
+            if filesize > 500:
                 print "add cpu 2"
                 AddRequestCPU(jdspath,3)
                 print "[MEMORY INCREASE] filesize = ",filesize
