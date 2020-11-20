@@ -11,7 +11,7 @@ from AddRequestMemory import AddRequestMemory #def AddRequestMemory(jds,memory)
 from AddRequestDisk import AddRequestDisk
 from AddRequestCPU import AddRequestCPU
 CheckSocketErrorOpen=True
-CheckSocketErrorClose=False
+CheckSocketErrorClose=True
 ResubMissingCheckPoint=True
 AcceptEvictedJob=True
 #TightCheck=True
@@ -46,7 +46,7 @@ def parse_name(name):
 
     return info
 
-def HasSocketError(errfile):
+def HasError(errfile):
     if not os.path.isfile(errfile):
         
         return False
@@ -70,6 +70,18 @@ def HasSocketError(errfile):
                 print "socket close error->",errfile
                 isFail=True
                 break
+        if 'Dictionary generation failed' in line :
+            print "Dictionary generation failed"
+            isFail=True
+        if 'Error' in line and '.pcm' in line:
+            print "pcm error"
+            isFail=True
+        if 'Failed to write out basket' in line:
+            print "Failed to write out basket"
+            #isFail=True
+        if 'No space left on device' in line:
+            print "No space left on device"
+            isFail=True
     f.close()
     return isFail
 
@@ -121,8 +133,8 @@ def isZombie(name,jid):##005 (3294050.000.000) 02/28 18:31:21 Job terminated.
             for line in lines:
                 if "WriteBuffer failed" in line:
                     print "[zombie]WriteBuffer failed"
-                    isZombie=True
-                    break
+                    #isZombie=True
+                    #break
                 if 'segmentation violation' in line:
                     print ">>segmentation violation"
                     isZombie=True
@@ -228,7 +240,7 @@ for name in NAMES:
     if not jid:
         NOT_STARTED.append(name)
         continue
-    IsFail=HasSocketError(name+'.err')
+    IsFail=HasError(name+'.err')
     
     IsTerminated=isTerminated(name+'.log',jid)
     IsZombie=isZombie(name,jid)
