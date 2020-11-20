@@ -205,12 +205,12 @@ NAMES=[]
 for form1 in FORMATS:
     for form2 in FORMATS:
         if form1==form2 : continue
-        FILES1=glob.glob(JOBDIR+"/*/*."+form1)
+        FILES1=glob.glob(JOBDIR+"/**."+form1)
         FILENAMES1=[]
         for a in FILES1: FILENAMES1.append(a.split(form1)[0].strip('.')) 
         
         
-        FILES2=glob.glob(JOBDIR+"/*/*."+form2)
+        FILES2=glob.glob(JOBDIR+"/**."+form2)
         FILENAMES2=[]
         for a in FILES2: FILENAMES2.append(a.split(form2)[0].strip('.'))
         

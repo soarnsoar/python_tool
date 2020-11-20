@@ -15,6 +15,7 @@ sys.path.insert(0, scriptpath+"../")
 from CalMemoryUsage_condor import CalcMemory ##input = logpath+<logfile>.log
 from AddRequestMemory import AddRequestMemory
 from AddRequestDisk import AddRequestDisk
+from AddRequestCPU import AddRequestCPU
 from datetime import datetime
 from LastModifiedTime import LastModifiedTime
 from GetCondorSpace import GetCondorSpace
@@ -31,6 +32,7 @@ parser.add_option("-r","--resub_fail",   dest="resub_fail", help="want to resubm
 parser.add_option("-c","--change_workdir",   dest="chworkdir", help="want to change workdir from home to scratch?")
 parser.add_option("-N","--nresub",   dest="Nresub", help="number of jobs for resub" )
 parser.add_option("-p","--passzombie",   dest="passzombie", help="pass zombie scan step", default=False, action="store_true" )
+parser.add_option("-s","--samplepy",   dest="Latino_samplepyArg", help="Latino_samplepy", default='', )
 
 (options, args) = parser.parse_args()
 
@@ -356,48 +358,64 @@ TREEDIR='/xrootd/store/user/jhchoi/Latino/HWWNano/'
 #JOBDIR='NanoGardening__Fall2017_102X_nAODv4_Full2017v5'
 ###Setup#### 
 Latino_sampleDir=''
+#Latino_samplepyArg=
 if os.getenv('CMSSW_BASE')=='': 
     print "!!Need cmsenv!!"
     exit()
-else :
+if options.Latino_samplepyArg=='':
     Latino_sampleDir=os.getenv('CMSSW_BASE')+'/src/LatinoAnalysis/NanoGardener/python/framework/samples/'
-Latino_sampleFile=''
-if 'Summer16_102X_nAODv4' in JOBDIR:
-    Latino_sampleFile='Summer16_102X_nAODv4.py'
-elif 'Summer16_102X_nAODv5' in JOBDIR:
-    Latino_sampleFile='Summer16_102X_nAODv5.py'
-elif 'Run2016_102X_nAODv4' in JOBDIR:
-    Latino_sampleFile='Run2016_102X_nAODv4.py'
-elif 'Run2016_102X_nAODv5' in JOBDIR:
-    Latino_sampleFile='Run2016_102X_nAODv5.py'
-elif 'Fall2017_102X_nAODv4' in JOBDIR:
-    Latino_sampleFile='fall17_102X_nAODv4.py'
-elif 'Fall2017_102X_nAODv5' in JOBDIR:
-    Latino_sampleFile='fall17_102X_nAODv5.py'
-elif 'Fall2017_102X_nAODv5' in JOBDIR:
-    Latino_sampleFile='fall17_102X_nAODv5.py'
-elif 'Run2017_102X_nAODv4' in JOBDIR:
-    Latino_sampleFile='Run2017_102X_nAODv4.py'
-elif 'Run2017_102X_nAODv5' in JOBDIR:
-    Latino_sampleFile='Run2017_102X_nAODv5.py'
-elif 'NanoGardening__Run2018_102X_nAODv4_14Dec' in JOBDIR:
-    Latino_sampleFile='Run2018_102X_nAODv4_14Dec2018.py'
-elif 'NanoGardening__Autumn18_102X_nAODv4_GTv16' in JOBDIR:
-    Latino_sampleFile='Autumn18_102X_nAODv4_v16.py'
-elif 'NanoGardening__Autumn18_102X_nAODv5_Full2018v5' in JOBDIR:
-    Latino_sampleFile='Autumn18_102X_nAODv5.py'
-elif 'NanoGardening__Autumn18_102X_nAODv6_Full2018v6' in JOBDIR:
-    Latino_sampleFile='Autumn18_102X_nAODv6.py'
-elif 'NanoGardening__Run2018_102X_nAODv5_Full2018v5' in JOBDIR:
-    Latino_sampleFile='Run2018_102X_nAODv5.py'
-elif 'NanoGardening__Run2018_102X_nAODv6_Full2018v6' in JOBDIR:
-    Latino_sampleFile='Run2018_102X_nAODv6.py'
-if Latino_sampleFile=='': 
-    print "!!None matched sample python in Latino path!!"
-    exit()
+    #'/src/LatinoAnalysis/NanoGardener/python/framework/samples/'
+    Latino_sampleFile=''
+    if 'Summer16_102X_nAODv4' in JOBDIR:
+        Latino_sampleFile='Summer16_102X_nAODv4.py'
+    elif 'Summer16_102X_nAODv5' in JOBDIR:
+        Latino_sampleFile='Summer16_102X_nAODv5.py'
+    elif 'Summer16_102X_nAODv7' in JOBDIR:
+        Latino_sampleFile='Summer16_102X_nAODv7.py'
+    elif 'Run2016_102X_nAODv4' in JOBDIR:
+        Latino_sampleFile='Run2016_102X_nAODv4.py'
+    elif 'Run2016_102X_nAODv5' in JOBDIR:
+        Latino_sampleFile='Run2016_102X_nAODv5.py'
+    elif 'Run2016_102X_nAODv7' in JOBDIR:
+        Latino_sampleFile='Run2016_102X_nAODv7.py'
+    elif 'Fall2017_102X_nAODv4' in JOBDIR:
+        Latino_sampleFile='fall17_102X_nAODv4.py'
+    elif 'Fall2017_102X_nAODv5' in JOBDIR:
+        Latino_sampleFile='fall17_102X_nAODv5.py'
+    elif 'Fall2017_102X_nAODv5' in JOBDIR:
+        Latino_sampleFile='fall17_102X_nAODv5.py'
+    elif 'Fall2017_102X_nAODv7' in JOBDIR:
+        Latino_sampleFile='fall17_102X_nAODv7.py'
+    elif 'Run2017_102X_nAODv4' in JOBDIR:
+        Latino_sampleFile='Run2017_102X_nAODv4.py'
+    elif 'Run2017_102X_nAODv5' in JOBDIR:
+        Latino_sampleFile='Run2017_102X_nAODv5.py'
+    elif 'Run2017_102X_nAODv7' in JOBDIR:
+        Latino_sampleFile='Run2017_102X_nAODv7.py'
+    elif 'NanoGardening__Run2018_102X_nAODv4_14Dec' in JOBDIR:
+        Latino_sampleFile='Run2018_102X_nAODv4_14Dec2018.py'
+    elif 'NanoGardening__Autumn18_102X_nAODv4_GTv16' in JOBDIR:
+        Latino_sampleFile='Autumn18_102X_nAODv4_v16.py'
+    elif 'NanoGardening__Autumn18_102X_nAODv5_Full2018v5' in JOBDIR:
+        Latino_sampleFile='Autumn18_102X_nAODv5.py'
+    elif 'NanoGardening__Autumn18_102X_nAODv6_Full2018v6' in JOBDIR:
+        Latino_sampleFile='Autumn18_102X_nAODv6.py'
+    elif 'NanoGardening__Autumn18_102X_nAODv7_Full2018v7' in JOBDIR:
+        Latino_sampleFile='Autumn18_102X_nAODv7.py'
+    elif 'NanoGardening__Run2018_102X_nAODv5_Full2018v5' in JOBDIR:
+        Latino_sampleFile='Run2018_102X_nAODv5.py'
+    elif 'NanoGardening__Run2018_102X_nAODv6_Full2018v6' in JOBDIR:
+        Latino_sampleFile='Run2018_102X_nAODv6.py'
+    elif 'NanoGardening__Run2018_102X_nAODv7_Full2018v7' in JOBDIR:
+        Latino_sampleFile='Run2018_102X_nAODv7.py'
+    if Latino_sampleFile=='': 
+        print "!!None matched sample python in Latino path!!"
+        exit()
 
-sample_py=Latino_sampleDir+"/"+Latino_sampleFile
-
+    
+    sample_py=Latino_sampleDir+"/"+Latino_sampleFile
+else:
+    sample_py=options.Latino_samplepyArg
 
 VETO_KEYWORDS=[]
 TAG=[]
@@ -548,12 +566,15 @@ for name in NAMES:
         f.close()
         if DRYRUN:
             filesize=CheckInputSize(pypath)
-            if filesize > 600:
+            if filesize > 500:
+                AddRequestCPU(jdspath,3)
                 print "[MEMORY INCREASE] filesize = ",filesize
                 if filesize < 1000:
                     AddRequestMemory(jdspath,float(filesize*10))
+                    
                 else:
                     AddRequestMemory(jdspath,float(10000))
+
                 #print "a"
                 print "[jhchoi]Add requst disk"
                 AddRequestDisk(jdspath,'5G')
@@ -656,12 +677,15 @@ for name in NAMES:
                 ZOMBIEINPUT=True
 
             
-            if filesize > 600:
+            if filesize > 500:
+                print "add cpu 2"
+                AddRequestCPU(jdspath,3)
                 print "[MEMORY INCREASE] filesize = ",filesize
                 if filesize < 1000:
                     AddRequestMemory(jdspath,float(filesize*10))
                 else:
                     AddRequestMemory(jdspath,float(10000))
+                
                 #print "a"
                 print "[jhchoi]Add requst disk"
                 AddRequestDisk(jdspath,'5G')
@@ -768,7 +792,7 @@ for name in NAMES:
             f=open(errpath)
             lines=f.readlines()
             for line in lines:
-                #if 'Error in <TFile::WriteBuffer>' in line : ZOMBIE=True
+                if 'Error in <TFile::WriteBuffer>' in line : ZOMBIE=True
                 if 'SysError in <TFile::ReadBuffer>: error reading from file' in line : 
                     print "[err ZOMBIE]SysError in <TFile::ReadBuffer>: error reading from file"
                     ZOMBIE=True
@@ -1044,7 +1068,7 @@ else:
     total_resub=max(0,int(Nresub)-int(Nmyjob))
 
 print "Number of Resubmission===>",total_resub
-LIST_RESUB=list(set(LIST_RESUB))
+#LIST_RESUB=list(set(LIST_RESUB))
 print "len(LIST_RESUB)=",len(LIST_RESUB)
 
 
@@ -1073,14 +1097,16 @@ for a in LIST_RESUB:
     os.chdir(JOBDIR)
 
 
-    #this_memory = 0
+    this_memory = 0
+    logpath=a+'.log'
+    jdspath=a+'.jds'
     #print "logpath->",a+'.log'
-    #if os.path.isfile(a+'.log') : 
-    #    this_memory=CalcMemory(a+'.log')##inMB
-    #    print "[MEMORY USAGE CHECK]",this_memory,"MB"
-    #if this_memory > 2900:
-    #    print "[JOB]Over 1000MB Memory, add request memory to jds"
-    #    AddRequestMemory(a+'.jds')
+    if os.path.isfile(logpath) : 
+        this_memory=CalcMemory(logpath)##inMB
+        print "[MEMORY USAGE CHECK]",this_memory,"MB"
+        if this_memory > 2900:
+            print "[JOB]Over 1000MB Memory, add request memory to jds"
+            AddRequestMemory(jdspath,float(this_memory))
 
 
 
