@@ -112,7 +112,7 @@ def UseROOTFIT():
   hfitdata=ROOT.RooDataHist("hdata","hdata",l,hdata) 
   hfitmc=ROOT.RooDataHist("hmc","hmc",l,hmc) 
 
-
+  dict_info={}
   for hfit in [ [hfitdata,'data'], [hfitmc,'mc']]:
     frame = x.frame()    
     #hfitdata.plotOn(frame)
@@ -120,19 +120,76 @@ def UseROOTFIT():
     hfit[0].plotOn(frame)
     hfit[0].statOn(frame)
     
+    #s4=hfit[0].GetListOfFunctions().FindObject("stats")
+    
+    #s4.SetX1NDC(0.78)
+    #s4.SetX2NDC(0.98)
+    #s4.SetY1NDC(0.48)
+    #s4.SetY2NDC(0.18)
     mean=ROOT.RooRealVar("mean","mean",85.782,65,105)
-    width=ROOT.RooRealVar("width","width",16.3, 0.0, 120.0)
-    sigma=ROOT.RooRealVar("sigma","sigma",16.3, 0.0, 120.0)
-    gauss=ROOT.RooBreitWigner("gauss","gauss",x,mean,sigma) 
+    width=ROOT.RooRealVar("width","width",2.085, 2.085-1*0.042, 2.085+1*0.042) ##decay width
+    sigma=ROOT.RooRealVar("sigma","sigma",8, 5, 10.0) ##detector
+    #gauss=ROOT.RooBreitWigner("gauss","gauss",x,mean,sigma) 
+    gauss=ROOT.RooVoigtian("gauss","gauss",x,mean,width,sigma) 
     
     #filtersdata=gauss.fitTo(hfitdata)
     #filtersmc=gauss.fitTo(hfitmc)
     filters=gauss.fitTo(hfit[0])
-    gauss.plotOn(frame)
-    gauss.paramOn(frame)
+    gauss.plotOn(frame,ROOT.RooFit.Layout(0.65,0.99,0.8))
+    gauss.paramOn(frame,ROOT.RooFit.Layout(0.65))
+
+    #print mean.getValV()
+
+    ##---store infos
+    _mean=mean.getValV()
+    _width=width.getValV()
+    _sigma=sigma.getValV()
+
+    _mean_up=_mean+mean.getErrorHi()
+    _mean_down=_mean+mean.getErrorLo()
+
+    _width_up=_width+width.getErrorHi()
+    _width_down=_width+width.getErrorLo()
+
+    _sigma_up=_sigma+sigma.getErrorHi()
+    _sigma_down=_sigma+sigma.getErrorLo()
+
+    dict_info[hfit[1]]={
+      'mean':_mean,
+      'width':_width,
+      'sigma':_sigma,
+
+
+      'mean_up':_mean_up,
+      'mean_down':_mean_down,
+
+      'width_up':_width_up,
+      'width_down':_width_down,
+
+      'sigma_up':_sigma_up,
+      'sigma_down':_sigma_down,
+      
+    }
+
+    #mean.Print()
+    #width.Print()
+    #sigma.Print()
+
     c1=ROOT.TCanvas()
+    frame.SetTitle(hfit[1])
     frame.Draw()
     c1.SaveAs('roofit_'+hfit[1]+'.pdf')
+
+  ##--JMS,JMR
+  dict_info['jms']=dict_info['data']['mean']/dict_info['mc']['mean']
+  dict_info['jmr']=dict_info['data']['sigma']/dict_info['mc']['sigma']
+
+  
+
+  ##--save info
+  f=open('fit_info.py','w')
+  f.write(str(dict_info))
+  f.close()
 
 if __name__ == '__main__':
   #--
