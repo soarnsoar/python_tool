@@ -1,43 +1,40 @@
-DIRBASE='NanoGardening__'
-
-
-
-
-
+DIRBASE='mkShapes__'
 
 
 while [ 1 ]
 do
-    ARR_DIR=($(ls -d ${DIRBASE}*/*/ | grep -v donelogs))
-
+    StartTime=$(date +%s)
+    ARR_DIR=($(ls -d ${DIRBASE}*/))
     echo "======LIST of Directories======="
     for DIR in ${ARR_DIR[@]};do
-	echo ${DIR}
-
+        echo ${DIR}
     done
 
-    idx=0
+
+
     for DIR in ${ARR_DIR[@]};do
+	
+	python python_tool/latino/check_plot_job.py ${DIR} --want_remove n --want_resub_notstarted n --want_resub_noDone n --want_resub_fail y --nmaxjob=1000
 
-	if [ $idx -gt 300 ]
-	then
-	    break
-	fi
-
-
-	N=`ls ${DIR}/NanoGardening__* |grep -v donelogs | wc -l`
-	if [ $N -eq 0 ]
-	then
-	    echo "No jobs to run"
-	#    rm ${DIR}/*
-	    continue
-	fi
-	python python_tool/latino/check_nanoGardener_jobs.py ${DIR} -d n -u n -r y -c n -N 800
-
-	idx=`expr $idx + 1`
     done
-    #break
-#sleep 1000
+
+
+    while [ 1 ]
+    do
+        ##To avoid too frequenct checking
+        EndTime=$(date +%s)
+        IterTime=$(($EndTime - $StartTime))
+
+        if [ $IterTime -lt 300 ]
+        then
+            echo "CURRENT IterTime=$IterTime"
+            echo "Sleep 100 sec until IterTime is over 300"
+            sleep 100
+        else
+            break
+        fi
+
+    done
+
+
 done
-    
-    
