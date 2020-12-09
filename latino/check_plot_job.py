@@ -84,10 +84,17 @@ def HasError(errfile):
         if 'No space left on device' in line:
             print "No space left on device"
             isFail=True
+        if 'Error: Parameters unset' in line:
+            print 'Error: Parameters unset'
+            isFail=True
     f.close()
     return isFail
 
 def isTerminated(logfile,jid):##005 (3294050.000.000) 02/28 18:31:21 Job terminated.
+
+    if not os.path.isfile(logfile):
+        return True
+
     f=open(logfile)
     lines=f.readlines()
     isTerminated=False
@@ -151,7 +158,7 @@ def GetJid(jidfile):
         jidfile=jidfile.replace('.jid','.done')
     if not os.path.isfile(jidfile):
         #print "Fail to Get jid of",jidfile
-        return False
+        return False,False
     f=open(jidfile)
     lines=f.readlines()##1 job(s) submitted to cluster 3294050.
     jid=False
@@ -418,14 +425,21 @@ else:
 print "nmaxjob=",nmaxjob
 print "nresub=",nresub
 print "ncurrentjob=",ncurrentjob
+
+if (nresub+ncurrentjob) > nmaxjob :
+    print "[nmaxjob]=",nmaxjob,"nresub+ncurrentjob=",nresub+ncurrentjob
+    print "[EXIT]"
+    exit()
+
 for a in list(set(RESUB)):
     #print 'nresub=',nresub
     #print "nresub+ncurrentjob=",nresub+ncurrentjob
     #print 'nmaxjob=',nmaxjob
     #a=a.split('/')[-1]
     if (nresub+ncurrentjob) > nmaxjob : 
-        #print "[nmaxjob]=",nmaxjob,"nresub+ncurrentjob=",nresub+ncurrentjob
-        continue
+        print "[nmaxjob]=",nmaxjob,"nresub+ncurrentjob=",nresub+ncurrentjob
+        print "[break]"
+        break
     curdir=os.getcwd()
     #os.chdir(JOBDIR)
     os.chdir(MAINDIR)
