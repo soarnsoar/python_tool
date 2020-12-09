@@ -155,6 +155,7 @@ def GetJid(jidfile):
     f=open(jidfile)
     lines=f.readlines()##1 job(s) submitted to cluster 3294050.
     jid=False
+    dryrun=False
     for line in lines:
         if "submitted to cluster" in line:
             
@@ -162,9 +163,11 @@ def GetJid(jidfile):
             
             jid=int(jid)
             break
-
+        if 'DRY' in line:
+            dryrun=True
+            break
     f.close()
-    return jid
+    return jid,dryrun
 def CheckMemory(name):
     log=name+'.log'
     jds=name+'.jds'
@@ -239,7 +242,10 @@ for name in NAMES:
     if not os.path.isfile(name+'.done'):
         NO_DONEFILE.append(name)
         HasNoDone=True
-    jid=GetJid(name+'.jid')
+    jid,dryrun=GetJid(name+'.jid')
+    if dryrun:
+        FAILS.append(name)
+        continue
     if not jid:
         NOT_STARTED.append(name)
         continue
@@ -401,14 +407,25 @@ for a in FAILS:
     if RemoveJob:do_condor_rm(jidfile)
 
 print "RESUB=",len(RESUB)
+
+ncurrentjob=int(GetNJobs())
 nresub=0
 if options.nmaxjob:
-    nmaxjob=options.nmaxjob
+    nmaxjob=int(options.nmaxjob)
 else:
     nmaxjob=999999999
+
+print "nmaxjob=",nmaxjob
+print "nresub=",nresub
+print "ncurrentjob=",ncurrentjob
 for a in list(set(RESUB)):
+    #print 'nresub=',nresub
+    #print "nresub+ncurrentjob=",nresub+ncurrentjob
+    #print 'nmaxjob=',nmaxjob
     #a=a.split('/')[-1]
-    if nresub > nmaxjob : break
+    if (nresub+ncurrentjob) > nmaxjob : 
+        #print "[nmaxjob]=",nmaxjob,"nresub+ncurrentjob=",nresub+ncurrentjob
+        continue
     curdir=os.getcwd()
     #os.chdir(JOBDIR)
     os.chdir(MAINDIR)
