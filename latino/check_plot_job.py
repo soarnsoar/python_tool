@@ -6,6 +6,8 @@ import sys
 import optparse
 import glob
 sys.path.insert(0, "python_tool/")
+from GetNJobs import GetNJobs
+
 from CalMemoryUsage_condor import CalcMemory
 from AddRequestMemory import AddRequestMemory #def AddRequestMemory(jds,memory)
 from AddRequestDisk import AddRequestDisk
@@ -179,6 +181,7 @@ parser.add_option("-d","--want_remove",   dest="want_remove", help="Want to remo
 parser.add_option("-u","--want_resub_notstarted",   dest="want_resub_notstarted", help="want_resub_notstarted")
 parser.add_option("-n","--want_resub_noDone",   dest="want_resub_noDone", help="want_resub_noDone")
 parser.add_option("-r","--want_resub_fail",   dest="want_resub_fail", help="want_resub_fail")
+parser.add_option("-m","--nmaxjob",   dest="nmaxjob", help="number of max condor jobs")
 
 (options, args) = parser.parse_args()
 
@@ -205,12 +208,12 @@ NAMES=[]
 for form1 in FORMATS:
     for form2 in FORMATS:
         if form1==form2 : continue
-        FILES1=glob.glob(JOBDIR+"/**."+form1)
+        FILES1=glob.glob(JOBDIR+"/*/*."+form1)
         FILENAMES1=[]
         for a in FILES1: FILENAMES1.append(a.split(form1)[0].strip('.')) 
         
         
-        FILES2=glob.glob(JOBDIR+"/**."+form2)
+        FILES2=glob.glob(JOBDIR+"/*/*."+form2)
         FILENAMES2=[]
         for a in FILES2: FILENAMES2.append(a.split(form2)[0].strip('.'))
         
@@ -398,9 +401,14 @@ for a in FAILS:
     if RemoveJob:do_condor_rm(jidfile)
 
 print "RESUB=",len(RESUB)
+nresub=0
+if options.nmaxjob:
+    nmaxjob=options.nmaxjob
+else:
+    nmaxjob=999999999
 for a in list(set(RESUB)):
     #a=a.split('/')[-1]
-
+    if nresub > nmaxjob : break
     curdir=os.getcwd()
     #os.chdir(JOBDIR)
     os.chdir(MAINDIR)
@@ -413,4 +421,4 @@ for a in list(set(RESUB)):
     print resubmit
     os.system(resubmit)
     os.chdir(curdir)
-
+    nresub+=1
