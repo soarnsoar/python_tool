@@ -23,5 +23,9 @@ def ChangeToKistiPublic(python_path):
 
 
 
-    os.system(python_path_new,python_path)
+    os.system('mv '+python_path+' '+python_path+'_old')
+    os.system('mv '+python_path_new+' '+python_path)
+    
 
+
+ChangeToKistiPublic('mkShapes__2017__cms_scratch_jhchoi_FinalBinNum4_Resolved_HMFull_V13_RelW0.02_DeepAK8WP0p5_dMchi2Resolution_SR__ALL__ggH_hww1000_c10brn00.py')
