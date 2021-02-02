@@ -6,7 +6,7 @@ import sys
 import optparse
 import glob
 sys.path.insert(0, "python_tool/")
-from GetNJobs import GetNJobs
+from GetNJobs import GetNJobs,GetNJobsByName
 
 from CalMemoryUsage_condor import CalcMemory
 from AddRequestMemory import AddRequestMemory #def AddRequestMemory(jds,memory)
@@ -415,7 +415,8 @@ for a in FAILS:
 
 print "RESUB=",len(RESUB)
 
-ncurrentjob=int(GetNJobs())
+#ncurrentjob=int(GetNJobs())
+ncurrentjob=int(GetNJobsByName('mkShapes'))
 nresub=0
 if options.nmaxjob:
     nmaxjob=int(options.nmaxjob)
