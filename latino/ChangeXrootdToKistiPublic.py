@@ -2,10 +2,10 @@
 #root://xrootd-cms.infn.it
 import os
 
-def ChangeToInfn(python_path):
+def ChangeToKistiPublic(python_path):
 
-    xrd_from='root://cms-xrd-global.cern.ch'
-    xrd_to='root://xrootd-cms.infn.it'
+    xrd_from='cms-xrdr.private.lo:2094'
+    xrd_to='cms-xrdr.sdfarm.kr'
 
     f=open(python_path,'r')
     python_path_new=python_path+'_new'
