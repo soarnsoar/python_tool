@@ -16,6 +16,13 @@ CheckSocketErrorOpen=True
 CheckSocketErrorClose=True
 ResubMissingCheckPoint=True
 AcceptEvictedJob=True
+PassEvictedJob=True
+
+print "CheckSocketErrorOpen",CheckSocketErrorOpen
+print "CheckSocketErrorClose",CheckSocketErrorClose
+print "ResubMissingCheckPoint",ResubMissingCheckPoint
+print "AcceptEvictedJob",AcceptEvictedJob
+print "PassEvictedJob",PassEvictedJob
 #TightCheck=True
 
 ######preDefined functions######
@@ -84,6 +91,9 @@ def HasError(errfile):
         if 'No space left on device' in line:
             print "No space left on device"
             isFail=True
+        if 'Remote I/O error' in line:
+            print "Remote I/O error"
+            isFail=True
         if 'Error: Parameters unset' in line:
             print 'Error: Parameters unset'
             isFail=True
@@ -101,33 +111,44 @@ def isTerminated(logfile,jid):##005 (3294050.000.000) 02/28 18:31:21 Job termina
     
     for line in lines:
         if 'Job terminated' in line and str(jid) in line:
+            print "Job terminated"
             isTerminated=True
             break
         if 'Job was aborted by the user' in line and str(jid) in line:
+            print "Job was aborted by the user"
             isTerminated=True
             break
         if 'reconnection failed' in line and str(jid) in line:
+            print "reconnection failed"
             isTerminated=True
+
+        if 'Job executing on host' in line and str(jid) in line:
+            print "Job executing on host -> reconnected"
+            isTerminated=False
+
     f.close()
     
     return isTerminated
 
 def isZombie(name,jid):##005 (3294050.000.000) 02/28 18:31:21 Job terminated.
-    if not ResubMissingCheckPoint:
-        return False
+    #if not ResubMissingCheckPoint:
+    #    return False
     logfile=name+'.log'
+    if not os.path.isfile(logfile):
+        return True
     f=open(logfile)
     lines=f.readlines()
     isZombie=False
     ##--log file
     for line in lines:
-        if 'Job was evicted' in line and str(jid) in line:
-            print ">>Job was evicted"
-            isZombie=True
-        if 'Job executing on host' in line and str(jid) in line:
-            print ">>job is restared"
-            if AcceptEvictedJob:
-                isZombie=False
+        if not PassEvictedJob:
+            if 'Job was evicted' in line and str(jid) in line:
+                print ">>Job was evicted"
+                isZombie=True
+            if 'Job executing on host' in line and str(jid) in line:
+                print ">>job is restared"
+                if AcceptEvictedJob:
+                    isZombie=False
             
     f.close()
     ##--errfile ##basket's WriteBuffer failed
@@ -254,7 +275,9 @@ for name in NAMES:
         FAILS.append(name)
         continue
     if not jid:
-        NOT_STARTED.append(name)
+        #NOT_STARTED.append(name) ##-jhchoi
+        if HasNoDone:
+            FAILS.append(name)
         continue
     IsFail=HasError(name+'.err')
     
@@ -262,7 +285,8 @@ for name in NAMES:
     IsZombie=isZombie(name,jid)
     if IsTerminated and HasNoDone:
         print "--Fin But no Done file"
-        CheckMemory(name)
+        if os.path.isfile(name+'.log'):
+            CheckMemory(name)
         FAILS.append(name)
     if IsFail or IsZombie : FAILS.append(name)
     if not IsTerminated: NOT_FINISHED.append(name)
@@ -431,8 +455,10 @@ if (nresub+ncurrentjob) > nmaxjob :
     print "[nmaxjob]=",nmaxjob,"nresub+ncurrentjob=",nresub+ncurrentjob
     print "[EXIT]"
     exit()
-
-for a in list(set(RESUB)):
+RESUB_REVERSE=sorted(list(set(RESUB)))
+RESUB_REVERSE.reverse()
+#for a in list(set(RESUB)):
+for a in RESUB_REVERSE:
     #print 'nresub=',nresub
     #print "nresub+ncurrentjob=",nresub+ncurrentjob
     #print 'nmaxjob=',nmaxjob
