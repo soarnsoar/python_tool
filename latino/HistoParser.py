@@ -1,6 +1,7 @@
 import ROOT
 import math
 ROOT.gROOT.SetBatch(True)
+DEBUG=False
 class HistoParser():
     def __init__(self,mydict):
         ####mydict####
@@ -13,7 +14,7 @@ class HistoParser():
 
     def ReadHistos(self):
         for gr in self.mydict:
-            print '[HistoParser] processing ',str(self.mydict[gr]['samples'])
+            if DEBUG: print '[HistoParser] processing ',str(self.mydict[gr]['samples'])
             self.mydict[gr]['histo']={}
             filename=self.mydict[gr]['FileName']
             f=ROOT.TFile.Open(filename)
@@ -25,17 +26,17 @@ class HistoParser():
                     integrals=0.
                     #self.mydict[gr]['histo'][cut][variable]['Sum']=
                     for sample in self.mydict[gr]['samples']:
-                        print '----cut=',cut,'variable',variable,'sample=',sample,'-----'
+                        if DEBUG: print '----cut=',cut,'variable',variable,'sample=',sample,'-----'
                         histopath=cut+'/'+variable+'/histo_'+sample
-                        print histopath
+                        if DEBUG: print histopath
                         
                         htemp=f.Get(cut+'/'+variable+'/histo_'+sample)
-                        #print "type(htemp)",type(htemp)
+                        #if DEBUG: print "type(htemp)",type(htemp)
                         self.mydict[gr]['histo'][cut][variable][sample]=htemp.Clone()
                         self.mydict[gr]['histo'][cut][variable][sample].SetDirectory(0)
                         
-                        #print "htemp.Integral()=",htemp.Integral()
-                        #print "self.mydict[gr]['histo'][cut][variable][sample].Integral()",self.mydict[gr]['histo'][cut][variable][sample].Integral()
+                        #if DEBUG: print "htemp.Integral()=",htemp.Integral()
+                        #if DEBUG: print "self.mydict[gr]['histo'][cut][variable][sample].Integral()",self.mydict[gr]['histo'][cut][variable][sample].Integral()
                         if idx==0:
                             self.mydict[gr]['histo'][cut][variable]['Sum']=htemp.Clone()
                             self.mydict[gr]['histo'][cut][variable]['Sum'].SetDirectory(0)
@@ -46,8 +47,8 @@ class HistoParser():
                         else:
                             self.mydict[gr]['histo'][cut][variable]['Sum'].Add(htemp)
                             integrals+=self.mydict[gr]['histo'][cut][variable][sample].Integral()
-                            #print "sum one by one=",integrals
-                            #print "integral sum histo=",self.mydict[gr]['histo'][cut][variable]['Sum'].Integral()
+                            #if DEBUG: print "sum one by one=",integrals
+                            #if DEBUG: print "integral sum histo=",self.mydict[gr]['histo'][cut][variable]['Sum'].Integral()
                         idx+=1
                         
                     
@@ -73,7 +74,7 @@ class HistoParser():
                         Nbins=self.mydict[gr]['histo'][cut][variable]['envelopUp'].GetNbinsX()
                         
                         break ##only for the first sample to get Nbins
-                    #print Nbins
+                    #if DEBUG: print Nbins
                     for ibin in range(0,Nbins+1):
                         
                         ymax=self.mydict[gr]['histo'][cut][variable]['envelopDown'].GetBinContent(ibin)
@@ -114,7 +115,7 @@ class HistoParser():
                         self.mydict[gr]['histo'][cut][variable]['symhessianasDown'].SetTitle(symhessianasHistoName+"Down")
                         Nbins=self.mydict[gr]['histo'][cut][variable]['symhessianasUp'].GetNbinsX()
                         break ##only for the first sample to get Nbins
-                    #print Nbins
+                    #if DEBUG: print Nbins
                     
                         
                     
@@ -164,7 +165,7 @@ class HistoParser():
                         self.mydict[gr]['histo'][cut][variable]['rmsDown'].SetTitle(rmsHistoName+"Down")
                         Nbins=self.mydict[gr]['histo'][cut][variable]['rmsUp'].GetNbinsX()
                         break ##only for the first sample to get Nbins
-                    #print Nbins
+                    #if DEBUG: print Nbins
                     for ibin in range(0,Nbins+1):
 
                         y0=self.mydict[gr]['histo'][cut][variable]['rmsDown'].GetBinContent(ibin)
@@ -213,7 +214,7 @@ class HistoParser():
                         self.mydict[gr]['histo'][cut][variable]['rmsasDown'].SetTitle(rmsasHistoName+"Down")
                         Nbins=self.mydict[gr]['histo'][cut][variable]['rmsasUp'].GetNbinsX()
                         break ##only for the first sample to get Nbins
-                    #print Nbins
+                    #if DEBUG: print Nbins
                     for ibin in range(0,Nbins+1):
 
                         y0=self.mydict[gr]['histo'][cut][variable]['rmsasDown'].GetBinContent(ibin)
@@ -267,7 +268,7 @@ class HistoParser():
 
 
     def MakeWeightedAvgShape(self,AvgHistoName):
-        print '[MakeWeightedAvgShape]'
+        if DEBUG: print '[MakeWeightedAvgShape]'
         for gr in self.mydict:
             for cut in self.mydict[gr]['cuts']:
                 for variable in self.mydict[gr]['variables']:
@@ -283,7 +284,7 @@ class HistoParser():
                         self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetTitle(AvgHistoName)
                         Nbins=self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].GetNbinsX()
                         break ##only for the first sample to get Nbins
-                    #print Nbins
+                    #if DEBUG: print Nbins
                     ##--initialize
                     for ibin in range(0,Nbins+1):
                         self.mydict[gr]['histo'][cut][variable]['WeightedAvg'].SetBinContent(ibin,0)
@@ -303,13 +304,13 @@ class HistoParser():
                             if self.mydict[gr]['histo'][cut][variable][sample].Integral()==0:continue ##pass zero shape
                             y=self.mydict[gr]['histo'][cut][variable][sample].GetBinContent(ibin)
                             yerr=self.mydict[gr]['histo'][cut][variable][sample].GetBinError(ibin)
-                            #print 'y=',y
-                            #print 'yerr=',yerr
+                            #if DEBUG: print 'y=',y
+                            #if DEBUG: print 'yerr=',yerr
                             if y <= 0. :continue
                             if yerr <= 0. :continue
                             #if 3*yerr > y : 
-                                #print 'y=',y
-                                #print 'yerr=',yerr
+                                #if DEBUG: print 'y=',y
+                                #if DEBUG: print 'yerr=',yerr
                                 #continue ## remove low stat bin
                             
                             w=1/yerr
@@ -336,8 +337,8 @@ class HistoParser():
     
 
 
-            #print self.mydict[gr]['histo']
-        #print type(mydict['gr1']['histo']['eleCH__BoostedggF__SR__METOver40__PtOverM04']['MEKD_Bst_C_0.003_M900']['DATA'])
+            #if DEBUG: print self.mydict[gr]['histo']
+        #if DEBUG: print type(mydict['gr1']['histo']['eleCH__BoostedggF__SR__METOver40__PtOverM04']['MEKD_Bst_C_0.003_M900']['DATA'])
 if __name__ == '__main__':
     mydict={
         'gr1':{
