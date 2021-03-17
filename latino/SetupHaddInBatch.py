@@ -41,7 +41,7 @@ class haddjob():
         self.jds.append('output = '+self.OutPath)
         self.jds.append('error = '+self.ErrPath)
         self.jds.append('log = '+self.LogPath)
-        self.jds.append('request_cpus = '+str(self.ncpu))
+        self.jds.append('request_cpus = '+str(int(self.ncpu/2)))
         self.jds.append('accounting_group=group_cms')
         self.jds.append('JobBatchName='+self.jobname)
         self.jds.append('request_memory = '+str(int(self.memory))+' MB \n')
@@ -85,7 +85,7 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
     
-    ncpu=options.ncpu
+    ncpu=int(options.ncpu)
     jobname=options.jobname
     targetdir=options.targetdir
     ##    def __init__(self,jobname,ncpu,targetdir):
