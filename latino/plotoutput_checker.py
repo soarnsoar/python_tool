@@ -15,7 +15,7 @@ def plotoutput_chekcer(filename,procname):
                 hcentral.Integral()
             except:
                 print '======',filename,procname,"is zombie========="
-                print cut+'/'+variable+'/histo_'+proc
+                print cut+'/'+variable+'/histo_'+procname
                 filein.Close()
                 return False
             
