@@ -35,8 +35,10 @@ def GetEndTime(line):
     this_datetime=datetime(2000,MM,DD,hh,mm,ss)
     return this_datetime
 
-
-
+def GetCpuUsage(line):
+    #Cpus                 :     0.93        1         1
+    usage=line.split()[2]
+    return usage
 mydir=str(sys.argv[1]) 
 print "dir=",mydir
 key=''
@@ -51,7 +53,12 @@ MaxRuntimeFile=''
 MinRuntime=9999999999999.
 MinRuntimeFile=''
 SumRuntime=0
-
+SumCpuUsage=0.
+CpuUsage=-1
+MinCpuUsage=10
+MinCpuUsageFile=''
+MaxCpuUsage=-1
+nCpuUsage=0
 for log in loglist:
     #print log
     ValidStart=False
@@ -74,7 +81,8 @@ for log in loglist:
             #print EndTime
             #print EndTime.year
             #print "ValidEnd"
-
+        if 'Cpu' in line:
+            CpuUsage=float(GetCpuUsage(line))
     f.close()
     #print "ValidStart=",ValidStart
     #print "ValidEnd=",ValidEnd
@@ -97,11 +105,20 @@ for log in loglist:
         MinRuntime=thisRuntime
         MinRuntimeFile=log
     SumRuntime+=thisRuntime
-
-    
-
+    if CpuUsage>0:
+        SumCpuUsage+=CpuUsage
+        nCpuUsage+=1
+        if CpuUsage>MaxCpuUsage: MaxCpuUsage=CpuUsage
+        if CpuUsage<MinCpuUsage: 
+            MinCpuUsage=CpuUsage
+            MinCpuUsageFile=log
 print "Avg Runtime =", SumRuntime/len(loglist),"sec"
 print "Max Runtime =", MaxRuntime, "sec"
 print "Max Runtime File =", MaxRuntimeFile
 print "Min Runtime =", MinRuntime, "sec"
 print "Min Runtime File =", MinRuntimeFile
+print "----cpu usage----"
+print "Avg CpuUsage =",SumCpuUsage/nCpuUsage
+print "Min CpuUsage =",MinCpuUsage
+print "Max CpuUsage =",MaxCpuUsage
+print "MinCpuUsageFile=",MinCpuUsageFile
