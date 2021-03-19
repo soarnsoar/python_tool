@@ -6,7 +6,7 @@ import sys
 import optparse
 import glob
 sys.path.insert(0, "python_tool/")
-from GetNJobs import GetNJobs,GetNJobsByName
+from GetNJobs import GetNJobs,GetNJobsByName,GetN_RUNNING_IDLE_JobsByName
 
 from CalMemoryUsage_condor import CalcMemory
 from AddRequestMemory import AddRequestMemory #def AddRequestMemory(jds,memory)
@@ -14,13 +14,15 @@ from AddRequestDisk import AddRequestDisk
 from AddRequestCPU import AddRequestCPU
 CheckSocketErrorOpen=True
 CheckSocketErrorClose=True
-ResubMissingCheckPoint=True
+CheckReconnectFail=False
+#ResubMissingCheckPoint=True
 AcceptEvictedJob=True
 PassEvictedJob=True
 
 print "CheckSocketErrorOpen",CheckSocketErrorOpen
 print "CheckSocketErrorClose",CheckSocketErrorClose
-print "ResubMissingCheckPoint",ResubMissingCheckPoint
+print "CheckReconnectFail",CheckReconnectFail
+#print "ResubMissingCheckPoint",ResubMissingCheckPoint
 print "AcceptEvictedJob",AcceptEvictedJob
 print "PassEvictedJob",PassEvictedJob
 #TightCheck=True
@@ -63,6 +65,8 @@ def HasError(errfile):
     lines=f.readlines()
     isFail=False
     for line in lines:
+        if 'Server responded with an error' in line:
+            isFail=True
         if 'Error' in line and 'TNetXNGFile' in line:
             #if TightCheck:
             if not 'TNetXNGFile::Close' in line:
@@ -103,6 +107,7 @@ def HasError(errfile):
 def isTerminated(logfile,jid):##005 (3294050.000.000) 02/28 18:31:21 Job terminated.
 
     if not os.path.isfile(logfile):
+        print "No log file, is terminated"
         return True
 
     f=open(logfile)
@@ -120,7 +125,7 @@ def isTerminated(logfile,jid):##005 (3294050.000.000) 02/28 18:31:21 Job termina
             break
         if 'reconnection failed' in line and str(jid) in line:
             print "reconnection failed"
-            isTerminated=True
+            if CheckReconnectFail : isTerminated=True
 
         if 'Job executing on host' in line and str(jid) in line:
             print "Job executing on host -> reconnected"
@@ -213,6 +218,7 @@ parser.add_option("-u","--want_resub_notstarted",   dest="want_resub_notstarted"
 parser.add_option("-n","--want_resub_noDone",   dest="want_resub_noDone", help="want_resub_noDone")
 parser.add_option("-r","--want_resub_fail",   dest="want_resub_fail", help="want_resub_fail")
 parser.add_option("-m","--nmaxjob",   dest="nmaxjob", help="number of max condor jobs")
+parser.add_option("-p","--prio",   dest="prio", help="high prio job")
 
 (options, args) = parser.parse_args()
 
@@ -267,6 +273,12 @@ NO_DONEFILE=[]
 for name in NAMES:
     print "##--Running",name
     HasNoDone=False
+    if not os.path.isfile(name+'.jds'):
+        continue
+    if not os.path.isfile(name+'.sh'):
+        continue
+    if not os.path.isfile(name+'.py'):
+        continue
     if not os.path.isfile(name+'.done'):
         NO_DONEFILE.append(name)
         HasNoDone=True
@@ -294,7 +306,19 @@ for name in NAMES:
 
 
 print "---success--"
+print "move done files"
+os.system('mkdir -p donelogs/')
 print len(SUCCESS),"/",len(NAMES)
+for a in SUCCESS:
+    ##
+    if a in NO_DONEFILE : continue
+    if a in FAILS : continue
+    if a in NOT_FINISHED : continue
+    print "mv success job->",a
+    donedir=MAINDIR+'/'+"/".join(a.split("/")[:-1])+'/donelogs/'
+    os.system("mkdir -p "+donedir)
+    donefiles=MAINDIR+'/'+a+'.*'
+    os.system("mv "+donefiles+' '+donedir)
 
 print "---success but no DoneFile--"
 SUCCESS_NODONE=list(set(SUCCESS).intersection(NO_DONEFILE))
@@ -437,10 +461,16 @@ for a in FAILS:
     
     if RemoveJob:do_condor_rm(jidfile)
 
+
+
+
+#########------------Resubmission-----------#########
+
 print "RESUB=",len(RESUB)
 
 #ncurrentjob=int(GetNJobs())
-ncurrentjob=int(GetNJobsByName('mkShapes'))
+#ncurrentjob=int(GetNJobsByName('mkShapes'))
+ncurrentjob=int(GetN_RUNNING_IDLE_JobsByName('mkShapes'))
 nresub=0
 if options.nmaxjob:
     nmaxjob=int(options.nmaxjob)
@@ -455,10 +485,29 @@ if (nresub+ncurrentjob) > nmaxjob :
     print "[nmaxjob]=",nmaxjob,"nresub+ncurrentjob=",nresub+ncurrentjob
     print "[EXIT]"
     exit()
+
+
+
+##---reorder---##
+RESUB=list(set(RESUB))
+RESUB_order=[]
+for r in RESUB:
+    if 'TT' in r:
+        RESUB_order.append(r)
+    elif 'Wjets' in r:
+        RESUB_order.append(r)
+for r in RESUB:
+    if 'TT' in r:
+        continue
+    elif 'Wjets' in r:
+        continue
+    RESUB_order.append(r)
+
 RESUB_REVERSE=sorted(list(set(RESUB)))
 RESUB_REVERSE.reverse()
 #for a in list(set(RESUB)):
-for a in RESUB_REVERSE:
+#for a in RESUB_order:
+for a in RESUB:
     #print 'nresub=',nresub
     #print "nresub+ncurrentjob=",nresub+ncurrentjob
     #print 'nmaxjob=',nmaxjob
@@ -474,9 +523,20 @@ for a in RESUB_REVERSE:
     for form in ['err','out','log','done','jid']:
         if os.path.isfile(a+'.'+form):  os.system('mv '+a+'.'+form+' '+a+'.'+form+'_'+str(Nsub) )
     resubmit='condor_submit '+a+'.jds > '+a+'.jid'
-    
-
-    print resubmit
     os.system(resubmit)
+    if 'TT' in a or 'Wjets' in a:
+    
+        myprio='+20'
+
+        jidfile=a+'.jid'
+        jid,dryrun=GetJid(jidfile)
+
+        if options.prio:
+            myprio=options.prio
+        print "---is TT/Wjets->increase prio,",myprio,jid
+
+        os.system('condor_prio -p '+myprio+' '+str(jid))
+    print resubmit
+
     os.chdir(curdir)
     nresub+=1
