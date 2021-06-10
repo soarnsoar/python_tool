@@ -37,7 +37,34 @@ def GetNJobsByName(key):
     #NJOBS=stdout.split(TotalJobFlag)[1].split('jobs')[0].replace(' ','')
     #print NJOBS
     return int(NJOBS)
+
+
+def GetN_RUNNING_IDLE_JobsByName(key):
+    USER=os.getenv('USER')
+    #command=['condor_q',USER,"-constraint", "'"+"regexp("+'"'+key+"*"+'"'+", JobBatchName, \"i\")"+"'"]
+    
+    #print ' '.join(command)
+    #proc=subprocess.Popen(command,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    
+    #(stdout, stderr) = proc.communicate()
+    #print 'stdout',stdout
+    #print 'stderr',stderr
+    f=os.popen('condor_q '+USER+' -constraint '+"'"+"regexp("+'"'+key+"*"+'"'+", JobBatchName, \"i\")"+"'")
+    lines=f.readlines()
+    NJOBS=-1
+    for line in lines:
+        #print line
+        if TotalJobFlag in line:
+            #print line
+            NIDLEJOBS=line.split('idle')[0].split()[-1].replace(' ','')
+            NRUNNINGJOBS=line.split('running')[0].split()[-1].replace(' ','')
+            NJOBS=int(NIDLEJOBS)+int(NRUNNINGJOBS)
+    #NJOBS=stdout.split(TotalJobFlag)[1].split('jobs')[0].replace(' ','')
+    #print NJOBS
+    return int(NJOBS)
+
 if __name__ == '__main__':
     #N=GetNJobs()
-    N=GetNJobsByName('mkShap')
+    #N=GetNJobsByName('mkShap')
+    N=GetN_RUNNING_IDLE_JobsByName('mkShap')
     print N
