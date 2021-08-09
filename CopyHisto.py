@@ -15,7 +15,7 @@ def Copy(f_i,f_o,histopath_list):
         dirpath='/'.join(histopath.split('/')[:-1])
         histoname=histopath.split('/')[-1]
         tf_o.cd(dirpath)
-        tf_o.WriteObject(h,histoname)
+        ROOT.gDirectory.WriteObject(h,histoname)
     tf_i.Close()
     tf_o.Close()
 def GetHistopathList(f_i,suffix):
