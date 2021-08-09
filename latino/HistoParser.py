@@ -17,7 +17,7 @@ class HistoParser():
             if DEBUG: print '[HistoParser] processing ',str(self.mydict[gr]['samples'])
             self.mydict[gr]['histo']={}
             filename=self.mydict[gr]['FileName']
-            f=ROOT.TFile.Open(filename)
+            f=ROOT.TFile.Open(filename,"READ")
             for cut in self.mydict[gr]['cuts']:
                 self.mydict[gr]['histo'][cut]={}
                 for variable in self.mydict[gr]['variables']:
@@ -38,14 +38,16 @@ class HistoParser():
                         #if DEBUG: print "htemp.Integral()=",htemp.Integral()
                         #if DEBUG: print "self.mydict[gr]['histo'][cut][variable][sample].Integral()",self.mydict[gr]['histo'][cut][variable][sample].Integral()
                         if idx==0:
-                            self.mydict[gr]['histo'][cut][variable]['Sum']=htemp.Clone()
+                            #self.mydict[gr]['histo'][cut][variable]['Sum']=htemp.Clone()
+                            self.mydict[gr]['histo'][cut][variable]['Sum']=self.mydict[gr]['histo'][cut][variable][sample].Clone()
                             self.mydict[gr]['histo'][cut][variable]['Sum'].SetDirectory(0)
                             self.mydict[gr]['histo'][cut][variable]['Sum'].SetName(sample)
                             self.mydict[gr]['histo'][cut][variable]['Sum'].SetTitle(sample)
                             #self.mydict[gr]['histo'][cut][variable]['Sum'].SetSetEntries(0)
 
                         else:
-                            self.mydict[gr]['histo'][cut][variable]['Sum'].Add(htemp)
+                            #self.mydict[gr]['histo'][cut][variable]['Sum'].Add(htemp)
+                            self.mydict[gr]['histo'][cut][variable]['Sum'].Add(self.mydict[gr]['histo'][cut][variable][sample].Clone())
                             integrals+=self.mydict[gr]['histo'][cut][variable][sample].Integral()
                             #if DEBUG: print "sum one by one=",integrals
                             #if DEBUG: print "integral sum histo=",self.mydict[gr]['histo'][cut][variable]['Sum'].Integral()
