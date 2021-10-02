@@ -12,6 +12,7 @@ class condorjob:
         self.jdsfile=False
         self.logfile=False
         self.errfile=False
+        self.outfile=False
         ###---
         self.IsTerminated=False
         self.IsFail=False
@@ -24,6 +25,7 @@ class condorjob:
         if os.path.isfile(d+'/run.jds'): self.jdsfile=d+'/run.jds'
         if os.path.isfile(d+'/run.log'): self.logfile=d+'/run.log'
         if os.path.isfile(d+'/run.err'): self.errfile=d+'/run.err'
+        if os.path.isfile(d+'/run.out'): self.outfile=d+'/run.out'
 
         self.Check()
         
@@ -47,7 +49,7 @@ class condorjob:
             else:
                 self.IsFail=True
                 self.jid=False
-
+                return 0
         f=open(self.jidfile)
         lines=f.readlines()##1 job(s) submitted to cluster 3294050.                                                                                                                                                                               
         self.jid=False
@@ -63,6 +65,9 @@ class condorjob:
         
     def CheckTerminated(self):
         self.IsTerminated=False
+        if not self.logfile:
+            self.IsTerminated=True
+            return 0
         if not os.path.isfile(self.logfile):
             print "No log file, is terminated"
             self.IsTerminated=True
@@ -90,6 +95,7 @@ class condorjob:
         f.close()
         
     def CheckErrorfile(self):
+        if not self.errfile: return 1
         f=open(self.errfile)
         lines=f.readlines()
         self.IsFail=False
@@ -146,12 +152,13 @@ for d in dirlist:
         print 'resub',d
         os.system('condor_rm '+str(jid))
         ntrial=str(len(glob.glob(d+'/*.log*')))
-        os.system('mv '+thisjob.jidfile+' '+thisjob.jidfile+'_'+ntrial)
-        os.system('mv '+thisjob.logfile+' '+thisjob.logfile+'_'+ntrial)
-        os.system('mv '+thisjob.outfile+' '+thisjob.outfile+'_'+ntrial)
-        os.system('mv '+thisjob.errfile+' '+thisjob.errfile+'_'+ntrial)
-        os.system('mv '+thisjob.donefile+' '+thisjob.donefile+'_'+ntrial)
-        resub_command='condor_submit '+thisjob.jdsfile+" > "+thisjob.jidfile
+        if thisjob.jidfile : os.system('mv '+thisjob.jidfile+' '+thisjob.jidfile+'_'+ntrial)
+        if thisjob.logfile : os.system('mv '+thisjob.logfile+' '+thisjob.logfile+'_'+ntrial)
+        if thisjob.outfile : os.system('mv '+thisjob.outfile+' '+thisjob.outfile+'_'+ntrial)
+        if thisjob.errfile : os.system('mv '+thisjob.errfile+' '+thisjob.errfile+'_'+ntrial)
+        if thisjob.donefile : os.system('mv '+thisjob.donefile+' '+thisjob.donefile+'_'+ntrial)
+        resub_command='condor_submit '+thisjob.jdsfile+" > "+thisjob.jdsfile.replace('.jds','.jid')
+        print resub_command
         os.system(resub_command)
 
     elif thisjob.IsTerminated:
