@@ -145,6 +145,12 @@ for d in dirlist:
     if resub:
         print 'resub',d
         os.system('condor_rm '+str(jid))
+        ntrial=str(len(glob.glob(d+'/*.log*')))
+        os.system('mv '+thisjob.jidfile+' '+thisjob.jidfile+'_'+ntrial)
+        os.system('mv '+thisjob.logfile+' '+thisjob.logfile+'_'+ntrial)
+        os.system('mv '+thisjob.outfile+' '+thisjob.outfile+'_'+ntrial)
+        os.system('mv '+thisjob.errfile+' '+thisjob.errfile+'_'+ntrial)
+        os.system('mv '+thisjob.donefile+' '+thisjob.donefile+'_'+ntrial)
         resub_command='condor_submit '+thisjob.jdsfile+" > "+thisjob.jidfile
         os.system(resub_command)
 
