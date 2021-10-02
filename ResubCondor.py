@@ -142,6 +142,10 @@ class condorjob:
 targetdir=sys.argv[1]
 dirlist=glob.glob(targetdir+"/")
 
+njob=len(dirlist)
+ndone=0
+nresub=0
+nrunning=0
 for d in dirlist:
     print d
     thisjob=condorjob(d)
@@ -160,9 +164,15 @@ for d in dirlist:
         resub_command='condor_submit '+thisjob.jdsfile+" > "+thisjob.jdsfile.replace('.jds','.jid')
         print resub_command
         os.system(resub_command)
-
+        nresub+=1
     elif thisjob.IsTerminated:
         print "done"
-
+        ndone+=1
     else:
         print "running"
+        nrunning+=1
+
+print 'njob=',njob
+print 'ndone',ndone
+print 'nresub',nresub
+print 'nrunning',nrunning 
