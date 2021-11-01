@@ -187,16 +187,17 @@ class HistoParser():
                         
                         
                         #sigma=math.sqrt(SumOfDiff2)
-                        myavg=float(mysum/nMember)
-                        myavg2=float(mysum2/nMember)
+                        myavg=float(mysum/(nMember-1))
+                        myavg2=float(mysum2/(nMember-1))
                         sigma2=myavg2 - myavg**2
                         sigma=math.sqrt(sigma2)
 
 
                         self.mydict[gr]['histo'][cut][variable]['rmsUp'].SetBinContent(ibin,y0+sigma)
                         self.mydict[gr]['histo'][cut][variable]['rmsDown'].SetBinContent(ibin,y0-sigma)
-
-
+                        print "center=",self.mydict[gr]['histo'][cut][variable][sample].GetBinContent(ibin)
+                        print "Up=",self.mydict[gr]['histo'][cut][variable]['rmsUp'].GetBinContent(ibin)
+                        print "Down=",self.mydict[gr]['histo'][cut][variable]['rmsDown'].GetBinContent(ibin)
     def MakeRmsAsShape(self,rmsasHistoName):
         for gr in self.mydict:
             for cut in self.mydict[gr]['cuts']:
@@ -250,8 +251,8 @@ class HistoParser():
                         
                         
                         #sigma=math.sqrt(SumOfDiff2)
-                        myavg=float(mysum/nMember)
-                        myavg2=float(mysum2/nMember)
+                        myavg=float(mysum/(nMember-1))
+                        myavg2=float(mysum2/(nMember-1))
                         sigma2=myavg2 - myavg**2
                         sigma=math.sqrt(sigma2)
 
