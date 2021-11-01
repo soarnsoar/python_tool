@@ -187,9 +187,10 @@ class HistoParser():
                         
                         
                         #sigma=math.sqrt(SumOfDiff2)
-                        myavg=float(mysum/(nMember-1))
-                        myavg2=float(mysum2/(nMember-1))
+                        myavg=float(mysum/(nMember))
+                        myavg2=float(mysum2/(nMember))
                         sigma2=myavg2 - myavg**2
+                        sigma2=sigma2*(nMember/(nMember-1))
                         sigma=math.sqrt(sigma2)
 
 
@@ -251,9 +252,10 @@ class HistoParser():
                         
                         
                         #sigma=math.sqrt(SumOfDiff2)
-                        myavg=float(mysum/(nMember-1))
-                        myavg2=float(mysum2/(nMember-1))
+                        myavg=float(mysum/(nMember))
+                        myavg2=float(mysum2/(nMember))
                         sigma2=myavg2 - myavg**2
+                        sigma2=sigma2*(nMember/(nMember-1))
                         sigma=math.sqrt(sigma2)
 
                         ##alpha_s
