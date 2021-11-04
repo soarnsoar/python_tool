@@ -95,7 +95,11 @@ class HistoParser():
                                 ymin=y
                                 yminerr=yerr
                         self.mydict[gr]['histo'][cut][variable]['envelopUp'].SetBinContent(ibin,ymax)
-                        self.mydict[gr]['histo'][cut][variable]['envelopDown'].SetBinContent(ibin,max(ymin,0))
+                        #self.mydict[gr]['histo'][cut][variable]['envelopDown'].SetBinContent(ibin,max(ymin,0))
+                        if ycenter<0:
+                            self.mydict[gr]['histo'][cut][variable]['envelopDown'].SetBinContent(ibin,max(ymin,ycenter))
+                        else:
+                            self.mydict[gr]['histo'][cut][variable]['envelopDown'].SetBinContent(ibin,max(ymin,0))
                         
     def MakeSymhessianAsShape(self,symhessianasHistoName):
         for gr in self.mydict:
