@@ -146,7 +146,10 @@ class HistoParser():
                         sigma_as = 0.5*(yplus-yminus)
                         sigma=math.sqrt(SumOfDiff2 + sigma_as**2)
                         self.mydict[gr]['histo'][cut][variable]['symhessianasUp'].SetBinContent(ibin,y0+sigma)
-                        self.mydict[gr]['histo'][cut][variable]['symhessianasDown'].SetBinContent(ibin,max(y0-sigma,0))
+                        if y0<0 :
+                            self.mydict[gr]['histo'][cut][variable]['symhessianasDown'].SetBinContent(ibin,y0)
+                        else:
+                            self.mydict[gr]['histo'][cut][variable]['symhessianasDown'].SetBinContent(ibin,max(y0-sigma,0))
 
     def MakeRmsShape(self,rmsHistoName):
         for gr in self.mydict:
