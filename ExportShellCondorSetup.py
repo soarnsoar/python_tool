@@ -59,11 +59,16 @@ def Export(WORKDIR,command,jobname,submit,ncpu,memory,nretry=3):
     lines.append('output = '+os.getcwd()+'/'+WORKDIR+'/run.out')
     lines.append('error = '+os.getcwd()+'/'+WORKDIR+'/run.err')
     lines.append('log = '+os.getcwd()+'/'+WORKDIR+'/run.log')
+    if memory:
+        lines.append('request_memory = '+str(int(memory))+' MB \n')
+    ncpu_criteria=int(memory/4096)+1
+    if int(ncpu) < int(ncpu_criteria):
+        ncpu=ncpu_criteria
+
     lines.append('request_cpus = '+str(ncpu))
     lines.append('accounting_group=group_cms')
     lines.append('JobBatchName='+jobname)
-    if memory:
-        lines.append('request_memory = '+str(int(memory))+' MB \n')
+
     lines.append('queue')
     for line in lines:
         f.write(line+'\n')
@@ -90,8 +95,8 @@ if __name__ == '__main__':
    submit=options.submit
    ncpu=options.ncpu
    if options.memory:
-       memory=options.memory
+       memory=int(options.memory)
    else:
        memory=-1
-    Export(workdir,command,jobname,submit,ncpu,memory)
+   Export(workdir,command,jobname,submit,ncpu,memory)
 
