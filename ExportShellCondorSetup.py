@@ -1,7 +1,7 @@
 import optparse
 import os
 
-def Export(WORKDIR,command,jobname,submit,ncpu,nretry=3):
+def Export(WORKDIR,command,jobname,submit,ncpu,memory,nretry=3):
     command='('+command+')'
     os.system('mkdir -p '+WORKDIR)
     f=open(WORKDIR+'/run.sh','w')
@@ -62,7 +62,8 @@ def Export(WORKDIR,command,jobname,submit,ncpu,nretry=3):
     lines.append('request_cpus = '+str(ncpu))
     lines.append('accounting_group=group_cms')
     lines.append('JobBatchName='+jobname)
-    #lines.append('request_memory = '+str(int(self.memory))+' MB \n')
+    if memory:
+        lines.append('request_memory = '+str(int(memory))+' MB \n')
     lines.append('queue')
     for line in lines:
         f.write(line+'\n')
@@ -80,6 +81,7 @@ if __name__ == '__main__':
    parser.add_option("-n","--jobname",   dest="jobname", help="jobname")
    parser.add_option("-m","--ncpu",   dest="ncpu", help="number of multicores",default=1)
    parser.add_option("-s","--submit",   dest="submit",action="store_true", help="submit",default=False)
+   parser.add_option("-r","--memory",   dest="memory", help="memory")
    (options, args) = parser.parse_args()
 
    command=options.command
@@ -87,5 +89,9 @@ if __name__ == '__main__':
    jobname=options.jobname
    submit=options.submit
    ncpu=options.ncpu
-   Export(workdir,command,jobname,submit,ncpu)
+   if options.memory:
+       memory=options.memory
+   else:
+       memory=-1
+    Export(workdir,command,jobname,submit,ncpu,memory)
 
