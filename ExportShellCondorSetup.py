@@ -1,7 +1,7 @@
 import optparse
 import os
 
-def Export(WORKDIR,command,jobname,submit,ncpu,memory,nretry=3):
+def Export(WORKDIR,command,jobname,submit,ncpu,memory=False,nretry=3):
     command='('+command+')'
     os.system('mkdir -p '+WORKDIR)
     f=open(WORKDIR+'/run.sh','w')
