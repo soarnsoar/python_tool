@@ -82,6 +82,8 @@ class RebinningTool:
         if not oldbinning[-1] in newbinning: ##if total range is changed -> recover
             newbinning.pop()
             newbinning.append(oldbinning[-1])
+        print '[oldbinning]',oldbinning
+        print '[newbinning]',newbinning
         ##---4)Do Rebinning
         for h in self.histolist:
             integral_before=h.Integral()
