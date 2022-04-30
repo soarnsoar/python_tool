@@ -45,6 +45,14 @@ class RebinningTool:
             binToRebin=self.dict_ToRebin[binname]
             print binToRebin
             self._Rebin(fpath,binToRebin)
+
+    def restore_input(self):
+        for binname in self.dict_ToRebin: 
+            fpath= self.maindir+self.dict_H[binname]
+            os.system('cp '+fpath+'_backup '+fpath)
+            
+
+
     def _Rebin(self,fpath,binToRebin):
         tfile=ROOT.TFile.Open(fpath,'Update')
         ##---1)Read HistoList
@@ -93,6 +101,7 @@ class RebinningTool:
             newdata = json.load(st_json)
         #print newdata
         if 'emptyBkgBin' in newdata:
+            self.restore_input()
             return False
         else:
             return True
