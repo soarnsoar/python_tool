@@ -20,11 +20,12 @@ class RebinningTool:
                     hpath=line[3]
                     self.dict_H[binname]=hpath
         #print self.dict_H
+        f.close()
         self.GetMainDatacardDir()
     def GetMainDatacardDir(self):
         #self.datacardpath
         self.maindir='/'.join(self.datacardpath.split('/')[:-1])
-
+        self.maindir+'/'
     def ParseJson(self):
         self.dict_ToRebin={}
         with open(self.jsonpath, "r") as st_json:
@@ -35,7 +36,7 @@ class RebinningTool:
         #print self.dict_ToRebin
     def doRebin(self):
         for binname in self.dict_ToRebin: 
-            fpath= self.maindir+'/'+self.dict_H[binname]
+            fpath= self.maindir+self.dict_H[binname]
             if os.path.isfile(fpath) :
                 print 'Re Use backup'
                 os.system('cp '+fpath+'_backup '+fpath)
@@ -105,4 +106,5 @@ if __name__ == '__main__':
     rebin.GetHistoPath()
     rebin.ParseJson()
     rebin.doRebin()
-    print rebin.ReValidate()
+    if not rebin.ReValidate():
+        print 1/0
