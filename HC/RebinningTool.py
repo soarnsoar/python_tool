@@ -37,7 +37,7 @@ class RebinningTool:
     def doRebin(self):
         for binname in self.dict_ToRebin: 
             fpath= self.maindir+self.dict_H[binname]
-            if os.path.isfile(fpath) :
+            if os.path.isfile(fpath+'_backup') :
                 print 'Re Use backup'
                 os.system('cp '+fpath+'_backup '+fpath)
             else:
