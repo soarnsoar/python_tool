@@ -103,6 +103,8 @@ class RebinningTool:
             newdata = json.load(st_json)
         #print newdata
         if 'emptyBkgBin' in newdata:
+            print "----STILL EMPTY BIN!!!"
+            print newdata['emptyBkgBin']
             self.restore_input()
             return False
         else:
