@@ -4,6 +4,7 @@ import glob
 #rf=sys.argv[1]
 #
 def Draw(rf):
+    print '<',rf,'>'
     tfile=ROOT.TFile.Open(rf)
     BKG=[ 'DY', 'MultiBoson', 'Top','Wjets','QCD','WW','VH','qqWWqq','ggWW','ggH_hww','qqH_hww']
 
@@ -23,7 +24,7 @@ def Draw(rf):
             print "[NO Bkg Exp.]"
             print 'x->',h.GetBinLowEdge(i)
         print 'y->',h.GetBinContent(i)
-    c=ROOT.TCanvas("c", "canvas", 800, 800)
+    c=ROOT.TCanvas("c"+rf, "canvas"+rf, 800, 800)
     pad1=ROOT.TPad("pad1", "pad1", 0, 0.3, 1, 1.0)
     pad1.SetBottomMargin(0)
     pad1.SetGridx()
@@ -64,7 +65,7 @@ def Draw(rf):
     pdfname+='.pdf'
     c.SaveAs(pdfname)
     tfile.Close()
-
+    c.Close()
     
 
     #print yb/yd

@@ -38,6 +38,7 @@ class RebinningTool:
     def doRebin(self):
         for binname in self.dict_ToRebin: 
             fpath= self.maindir+self.dict_H[binname]
+            print fpath
             if self.niter==0:
                 if os.path.isfile(fpath+'_backup') :
                     print 'Re Use backup'
@@ -109,7 +110,7 @@ class RebinningTool:
         with open(self.jsonpath, "r") as st_json:
             self.data = json.load(st_json)
         #print newdata
-        if 'emptyBkgBin' in self.data:
+        if 'emptyBkgBin' in self.data and self.niter<5:
             print "----STILL EMPTY BIN!!!"
             print self.data['emptyBkgBin']
             self.dict_ToRebin=self.data['emptyBkgBin']
