@@ -55,11 +55,14 @@ def Draw(rf):
     hratio.GetXaxis().SetLabelSize(0.1)
     hratio.GetYaxis().SetNdivisions(505)
 
-
-
-
-
-
+    ##--Add 1 line
+    x1=hratio.GetXaxis().GetXmin()
+    x2=hratio.GetXaxis().GetXmax()
+    y1=1
+    y2=1
+    tline=ROOT.TLine(x1,y1,x2,y2)#TLine (Double_t x1, Double_t y1, Double_t x2, Double_t y2)
+    tline.SetLineStyle(2)
+    tline.Draw('sames')
 
     pdfname='.root'.join(rf.split('.root')[:-1])
     pdfname+='.pdf'
