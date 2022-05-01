@@ -2,8 +2,9 @@ import ROOT
 import sys
 import glob
 #rf=sys.argv[1]
-#tfile=ROOT.TFile.Open(rf)
+#
 def Draw(rf):
+    tfile=ROOT.TFile.Open(rf)
     BKG=[ 'DY', 'MultiBoson', 'Top','Wjets','QCD','WW','VH','qqWWqq','ggWW','ggH_hww','qqH_hww']
 
     yb=0
