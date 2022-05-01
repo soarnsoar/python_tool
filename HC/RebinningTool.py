@@ -86,6 +86,8 @@ class RebinningTool:
         if not oldbinning[-1] in newbinning: ##if total range is changed -> recover
             newbinning.pop()
             newbinning.append(oldbinning[-1])
+        if len(newbinning)==1:
+            newbinning.insert(0,0)
         print '[oldbinning]',oldbinning
         print '[newbinning]',newbinning
         ##---4)Do Rebinning
