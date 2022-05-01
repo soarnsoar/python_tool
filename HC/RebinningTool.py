@@ -9,6 +9,7 @@ class RebinningTool:
         self.datacardpath=datacardpath
         self.jsonpath=jsonpath
         self.dict_H={}
+        self.niter=0
     def GetHistoPath(self):
         f=open(self.datacardpath,'r')
         lines=f.readlines()
@@ -37,15 +38,18 @@ class RebinningTool:
     def doRebin(self):
         for binname in self.dict_ToRebin: 
             fpath= self.maindir+self.dict_H[binname]
-            if os.path.isfile(fpath+'_backup') :
-                print 'Re Use backup'
-                os.system('cp '+fpath+'_backup '+fpath)
-            else:
-                os.system('cp '+fpath+' '+fpath+'_backup')
+            if self.niter==0:
+                if os.path.isfile(fpath+'_backup') :
+                    print 'Re Use backup'
+                    os.system('cp '+fpath+'_backup '+fpath)
+                else:
+                    os.system('cp '+fpath+' '+fpath+'_backup')
+            
             binToRebin=self.dict_ToRebin[binname]
             print binToRebin
+            print '<',binname,'>'
             self._Rebin(fpath,binToRebin)
-
+        self.niter+=1
     def restore_input(self):
         for binname in self.dict_ToRebin: 
             fpath= self.maindir+self.dict_H[binname]
@@ -97,15 +101,18 @@ class RebinningTool:
         tfile.Close()        
     def ReValidate(self):
         self.newjsonpath=self.jsonpath+'_new.json'
-        os.system('ValidateDatacards.py '+self.datacardpath+' --jsonFile '+self.newjsonpath)
-        newdata={}
-        with open(self.newjsonpath, "r") as st_json:
-            newdata = json.load(st_json)
+        #os.system('ValidateDatacards.py '+self.datacardpath+' --jsonFile '+self.newjsonpath)
+        os.system('ValidateDatacards.py '+self.datacardpath+' --jsonFile '+self.jsonpath)
+        self.data={}
+        with open(self.jsonpath, "r") as st_json:
+            self.data = json.load(st_json)
         #print newdata
-        if 'emptyBkgBin' in newdata:
+        if 'emptyBkgBin' in self.data:
             print "----STILL EMPTY BIN!!!"
-            print newdata['emptyBkgBin']
-            self.restore_input()
+            print self.data['emptyBkgBin']
+            self.dict_ToRebin=self.data['emptyBkgBin']
+            #self.doRebin()
+            #self.restore_input()
             return False
         else:
             return True
@@ -119,5 +126,9 @@ if __name__ == '__main__':
     rebin.GetHistoPath()
     rebin.ParseJson()
     rebin.doRebin()
-    if not rebin.ReValidate():
-        print 1/0
+    while 1 :
+        if rebin.ReValidate():
+            break
+        else:
+            rebin.doRebin()
+
