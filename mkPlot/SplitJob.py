@@ -58,7 +58,7 @@ class splitter:
             commandlist=[]
             commandlist.append('cd '+os.getcwd())
             commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
-            commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=plot_elemu_'+bst+'_Combine_blind.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu')
+            commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=plot_elemu_'+bst+'_Combine_blind.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu_blind')
             command='&&'.join(commandlist)
             jobname='plot'+self.Year+bst
             submit=True
@@ -69,7 +69,7 @@ class splitter:
             commandlist=[]
             commandlist.append('cd '+os.getcwd())
             commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
-            commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=StructureFiles/plot.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu')
+            commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=StructureFiles/plot.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu_finalbkg')
             command='&&'.join(commandlist)
             jobname='plot'+self.Year+bst
             submit=True
