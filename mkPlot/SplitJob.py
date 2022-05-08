@@ -41,11 +41,35 @@ class splitter:
                 bst='Boosted'
             else:
                 bst='Resolved'
-            WORKDIR="WORKDIR_MKPLOT/"+cutfile+'/'
+
+            ##--1) nominal
+            WORKDIR="WORKDIR_MKPLOT/"+cutfile+'/nom/'
             commandlist=[]
             commandlist.append('cd '+os.getcwd())
             commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
             commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=plot_elemu_'+bst+'_Combine.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu')
+            command='&&'.join(commandlist)
+            jobname='plot'+self.Year+bst
+            submit=True
+            ncpu=1
+            Export(WORKDIR,command,jobname,submit,ncpu)
+            ##--2) blind
+            WORKDIR="WORKDIR_MKPLOT/"+cutfile+'/blind/'
+            commandlist=[]
+            commandlist.append('cd '+os.getcwd())
+            commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
+            commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=plot_elemu_'+bst+'_Combine_blind.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu')
+            command='&&'.join(commandlist)
+            jobname='plot'+self.Year+bst
+            submit=True
+            ncpu=1
+            Export(WORKDIR,command,jobname,submit,ncpu)
+            ##--3) final
+            WORKDIR="WORKDIR_MKPLOT/"+cutfile+'/finalbkg/'
+            commandlist=[]
+            commandlist.append('cd '+os.getcwd())
+            commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
+            commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=StructureFiles/plot.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu')
             command='&&'.join(commandlist)
             jobname='plot'+self.Year+bst
             submit=True
