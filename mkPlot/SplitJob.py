@@ -7,7 +7,7 @@ import glob
 import optparse
 
 class splitter:
-    def __init__(self,cutspy,nuisancepy,samples,inputs):
+    def __init__(self,cutspy,nuisancepy,samples,inputs,variablepy):
         ##
         self.cutspy=cutspy
         self.nuisancepy=nuisancepy
@@ -26,8 +26,13 @@ class splitter:
             self.samplesopt="--samplesFile="+self.samples
         else:
             self.samplesopt="--samplesFile=samples_'+self.Year+'_dummy.py"
+
+        self.variablepy=variablepy
         self.cutfiles=[]
+        self.variablefiles=[]
         self.ReadCuts()
+        if self.variablepy:
+            self.ReadVariables()
     def ReadCuts(self):
         print self.cutspy
         exec(open(self.cutspy))
@@ -35,24 +40,103 @@ class splitter:
         #    print cut
         self.cuts=cuts
         self.Year=Year
+
+    def ReadVariables(self):
+        print self.variablepy
+        exec(open(self.variablepy))
+        #for cut in cuts:
+        #    print cut
+        self.variables=variables
+
         
     def Split(self):
         os.system('mkdir -p split_plots/')
         f=open(self.cutspy,'r')
         lines=f.readlines()
+        
         for cut in self.cuts:
 
-            newpath='split_plots/'+self.cutspy+'__'+cut+'.py'
-            self.cutfiles.append(newpath)
-            print newpath
-            fnew=open(newpath,'w')
+                    newpath='split_plots/'+self.cutspy+'__'+cut+'.py'
+                    self.cutfiles.append(newpath)
+                    print newpath
+                    fnew=open(newpath,'w')
             
-            for line in lines:
-                fnew.write(line)
-            fnew.write('cuts={}\n')
-            fnew.write('cuts["'+cut+'"]="'+self.cuts[cut]+'"')
-            fnew.close()
+                    for line in lines:
+                        fnew.write(line)
+                    fnew.write('cuts={}\n')
+                    fnew.write('cuts["'+cut+'"]="'+self.cuts[cut]+'"')
+                    fnew.close()
+        if self.variablepy:
+            for variable in self.variables:
+                newpath='split_plots/'+self.variablepy+'__'+variable+'.py'
+                self.variablefiles.append(newpath)
+                print newpath
+                fnew=open(newpath,'w')
+                for line in lines:
+                    fnew.write(line)
+                fnew.write('variables={}\n')
+                fnew.write('variables["'+variable+'"]="'+self.variables[variable]+'"')
+                fnew.close()
+
     def Submit(self):
+        if self.variablepy:
+            self.Submit_AllVariables()
+        else:
+            self.Submit_EachVariables()
+    def Submit_EachVariables(self):
+        for cutfile in self.cutfiles:
+            for variablefile in self.variablefiles:
+                if 'Boosted' in cutfile:
+                    bst='Boosted'
+                else:
+                    bst='Resolved'
+
+                ##--1) nominal
+                WORKDIR="WORKDIR_MKPLOT/"+cutfile+'__'+variablefile+'/nom/'
+                commandlist=[]
+                commandlist.append('cd '+os.getcwd())
+                if self.inputs:
+                    commandlist.append('input='+self.inputs)
+                else:
+                    commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
+                commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=plot_elemu_'+bst+'_Combine.py --showIntegralLegend=1 --cutsFile '+cutfile+' --variablesFile='+variablefile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu '+self.nuisanceopt+" "+self.multiopt+" "+self.samplesopt)
+                command='&&'.join(commandlist)
+                jobname='plot'+self.Year+bst
+                submit=True
+                ncpu=1
+                Export(WORKDIR,command,jobname,submit,ncpu)
+                ##--2) blind
+                WORKDIR="WORKDIR_MKPLOT/"+cutfile+'/blind/'
+                commandlist=[]
+                commandlist.append('cd '+os.getcwd())
+                if self.inputs:
+                    commandlist.append('input='+self.inputs)
+                else:
+                    commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
+                commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=plot_elemu_'+bst+'_Combine_blind.py --showIntegralLegend=1 --cutsFile '+cutfile+' '+' --variablesFile='+variablefile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu_blind '+self.nuisanceopt+" "+self.multiopt+" "+self.samplesopt)
+                command='&&'.join(commandlist)
+                jobname='plot'+self.Year+bst
+                submit=True
+                ncpu=1
+                Export(WORKDIR,command,jobname,submit,ncpu)
+                ##--3) final
+                WORKDIR="WORKDIR_MKPLOT/"+cutfile+'/finalbkg/'
+                commandlist=[]
+                commandlist.append('cd '+os.getcwd())
+                if self.inputs:
+                    commandlist.append('input='+self.inputs)
+                else:
+                    commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
+                commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --plotFile=StructureFiles/plot.py --showIntegralLegend=1 --cutsFile '+cutfile+' '+' --variablesFile='+variablefile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu_finalbkg '+self.nuisanceopt+" "+self.multiopt+" "+self.samplesopt)
+                command='&&'.join(commandlist)
+                jobname='plot'+self.Year+bst
+                submit=True
+                ncpu=1
+                Export(WORKDIR,command,jobname,submit,ncpu)
+
+
+
+    def Submit_AllVariables(self):
         #def Export(WORKDIR,command,jobname,submit,ncpu,memory=False,nretry=3):
         for cutfile in self.cutfiles:
             if 'Boosted' in cutfile:
@@ -123,9 +207,14 @@ if __name__ == '__main__':
     else:
         intpus=False
 
+    if len(sys.argv)>5:
+        variablepy=sys.argv[5]
+    else:
+        variablepy=False
+
 
     #run=splitter('cuts_Boosted_Combine.py')
-    run=splitter(cutpy,nuisancepy,samples,inputs)
+    run=splitter(cutpy,nuisancepy,samples,inputs,variablepy)
     #run.RunCuts()
     run.Split()
     run.Submit()
