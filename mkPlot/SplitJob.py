@@ -4,8 +4,10 @@ import sys
 sys.path.append('python_tool/')
 from ExportShellCondorSetup import Export
 import glob
+import optparse
+
 class splitter:
-    def __init__(self,cutspy,nuisancepy,inputs):
+    def __init__(self,cutspy,nuisancepy,samples,inputs):
         ##
         self.cutspy=cutspy
         self.nuisancepy=nuisancepy
@@ -14,7 +16,13 @@ class splitter:
         else:
             self.nuisanceopt=''
         self.inputs=inputs
+        if len(self.inputs.split(','))>1:self.multiopt="--isMultiInputs"
 
+        samples=self.samples
+        if self.samples:
+            self.samplesopt="--samplesFile="+self.sample
+        else:
+            self.samplesopt="--samplesFile=samples_'+self.Year+'_dummy.py"
         self.cutfiles=[]
         self.ReadCuts()
     def ReadCuts(self):
@@ -55,9 +63,10 @@ class splitter:
             commandlist.append('cd '+os.getcwd())
             if self.inputs:
                 commandlist.append('input='+self.inputs)
-            self:
+                    
+            else:
                 commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
-            commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=plot_elemu_'+bst+'_Combine.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu '+self.nuisanceopt)
+            commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=plot_elemu_'+bst+'_Combine.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu '+self.nuisanceopt+" "+self.multiopt+" "+self.samplesopt)
             command='&&'.join(commandlist)
             jobname='plot'+self.Year+bst
             submit=True
@@ -69,9 +78,9 @@ class splitter:
             commandlist.append('cd '+os.getcwd())
             if self.inputs:
                 commandlist.append('input='+self.inputs)
-            self:
+            else:
                 commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
-            commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=plot_elemu_'+bst+'_Combine_blind.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu_blind '+self.nuisanceopt)
+            commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=plot_elemu_'+bst+'_Combine_blind.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu_blind '+self.nuisanceopt+" "+self.multiopt+" "+self.samplesopt)
             command='&&'.join(commandlist)
             jobname='plot'+self.Year+bst
             submit=True
@@ -83,9 +92,9 @@ class splitter:
             commandlist.append('cd '+os.getcwd())
             if self.inputs:
                 commandlist.append('input='+self.inputs)
-            self:
+            else:
                 commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
-            commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=StructureFiles/plot.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu_finalbkg '+self.nuisanceopt)
+            commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --plotFile=StructureFiles/plot.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu_finalbkg '+self.nuisanceopt+" "+self.multiopt+" "+self.samplesopt)
             command='&&'.join(commandlist)
             jobname='plot'+self.Year+bst
             submit=True
@@ -100,8 +109,20 @@ if __name__ == '__main__':
         nuisancepy=sys.argv[2]
     else:
         nuisancepy=False
+        
+    if len(sys.argv)>3:
+        samples=sys.argv[3]
+    else:
+        samples=False
+
+    if len(sys.argv)>4:
+        inputs=sys.argv[4]
+    else:
+        intpus=False
+
+
     #run=splitter('cuts_Boosted_Combine.py')
-    run=splitter(cutpy,nuisancepy)
+    run=splitter(cutpy,nuisancepy,samples,inputs)
     #run.RunCuts()
     run.Split()
     run.Submit()
