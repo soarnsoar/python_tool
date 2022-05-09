@@ -24,6 +24,10 @@ class splitter:
         else:
             self.multiopt=""
 
+
+
+        self.ReadCuts()
+
         self.samples=samples
         if self.samples:
             self.samplesopt="--samplesFile="+self.samples
@@ -33,7 +37,7 @@ class splitter:
         self.variablepy=variablepy
         self.cutfiles=[]
         self.variablefiles=[]
-        self.ReadCuts()
+
         if self.variablepy:
             self.ReadVariables()
     def ReadCuts(self):
