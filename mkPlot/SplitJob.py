@@ -15,9 +15,12 @@ class splitter:
             self.nuisanceopt="--nuisancesFile="+self.nuisancepy
         else:
             self.nuisanceopt=''
+
+
         self.inputs=inputs
-        if len(self.inputs.split(','))>1:
-            self.multiopt="--isMultiInputs"
+        if self.inputs:
+            if len(self.inputs.split(','))>1:
+                self.multiopt="--isMultiInputs"
         else:
             self.multiopt=""
 
@@ -211,7 +214,7 @@ if __name__ == '__main__':
     if len(sys.argv)>4:
         inputs=sys.argv[4]
     else:
-        intpus=False
+        inputs=False
 
     if len(sys.argv)>5:
         variablepy=sys.argv[5]
