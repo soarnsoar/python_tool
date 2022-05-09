@@ -5,7 +5,7 @@ sys.path.append('python_tool/')
 from ExportShellCondorSetup import Export
 import glob
 class splitter:
-    def __init__(self,cutspy,nuisancepy):
+    def __init__(self,cutspy,nuisancepy,inputs):
         ##
         self.cutspy=cutspy
         self.nuisancepy=nuisancepy
@@ -13,6 +13,8 @@ class splitter:
             self.nuisanceopt="--nuisancesFile="+self.nuisancepy
         else:
             self.nuisanceopt=''
+        self.inputs=inputs
+
         self.cutfiles=[]
         self.ReadCuts()
     def ReadCuts(self):
@@ -51,7 +53,10 @@ class splitter:
             WORKDIR="WORKDIR_MKPLOT/"+cutfile+'/nom/'
             commandlist=[]
             commandlist.append('cd '+os.getcwd())
-            commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
+            if self.inputs:
+                commandlist.append('input='+self.inputs)
+            self:
+                commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
             commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=plot_elemu_'+bst+'_Combine.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu '+self.nuisanceopt)
             command='&&'.join(commandlist)
             jobname='plot'+self.Year+bst
@@ -62,7 +67,10 @@ class splitter:
             WORKDIR="WORKDIR_MKPLOT/"+cutfile+'/blind/'
             commandlist=[]
             commandlist.append('cd '+os.getcwd())
-            commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
+            if self.inputs:
+                commandlist.append('input='+self.inputs)
+            self:
+                commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
             commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=plot_elemu_'+bst+'_Combine_blind.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu_blind '+self.nuisanceopt)
             command='&&'.join(commandlist)
             jobname='plot'+self.Year+bst
@@ -73,7 +81,10 @@ class splitter:
             WORKDIR="WORKDIR_MKPLOT/"+cutfile+'/finalbkg/'
             commandlist=[]
             commandlist.append('cd '+os.getcwd())
-            commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
+            if self.inputs:
+                commandlist.append('input='+self.inputs)
+            self:
+                commandlist.append('input=`ls rootFile*'+bst+'*Combine*/hadd.root`')
             commandlist.append('mkPlot.py --pycfg=configuration_'+bst+'_Combine.py --inputFile=${input} --samplesFile=samples_'+self.Year+'_dummy.py --plotFile=StructureFiles/plot.py --showIntegralLegend=1 --cutsFile '+cutfile+' --outputDirPlots=plots_'+self.Year+'_'+bst+'_Combine_elemu_finalbkg '+self.nuisanceopt)
             command='&&'.join(commandlist)
             jobname='plot'+self.Year+bst
