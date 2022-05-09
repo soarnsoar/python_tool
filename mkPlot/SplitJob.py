@@ -66,7 +66,13 @@ class splitter:
                     fnew.write('cuts={}\n')
                     fnew.write('cuts["'+cut+'"]="'+self.cuts[cut]+'"')
                     fnew.close()
+        f.close()
         if self.variablepy:
+            print self.variablepy
+            lines=[]
+            f=open(self.variablepy,'r')
+            lines=f.readlines()
+
             for variable in self.variables:
                 newpath='split_plots/'+self.variablepy+'__'+variable+'.py'
                 self.variablefiles.append(newpath)
@@ -75,11 +81,11 @@ class splitter:
                 for line in lines:
                     fnew.write(line)
                 fnew.write('variables={}\n')
-                fnew.write('variables["'+variable+'"]="'+self.variables[variable]+'"')
+                fnew.write('variables["'+variable+'"]='+str(self.variables[variable]))
                 fnew.close()
-
+            f.close()
     def Submit(self):
-        if self.variablepy:
+        if not self.variablepy:
             self.Submit_AllVariables()
         else:
             self.Submit_EachVariables()
@@ -92,7 +98,7 @@ class splitter:
                     bst='Resolved'
 
                 ##--1) nominal
-                WORKDIR="WORKDIR_MKPLOT/"+cutfile+'__'+variablefile+'/nom/'
+                WORKDIR="WORKDIR_MKPLOT/"+cutfile.replace('/','__')+'__'+variablefile.replace('/','__')+'/nom/'
                 commandlist=[]
                 commandlist.append('cd '+os.getcwd())
                 if self.inputs:
@@ -106,7 +112,7 @@ class splitter:
                 ncpu=1
                 Export(WORKDIR,command,jobname,submit,ncpu)
                 ##--2) blind
-                WORKDIR="WORKDIR_MKPLOT/"+cutfile+'/blind/'
+                WORKDIR="WORKDIR_MKPLOT/"+cutfile.replace('/','__')+'__'+variablefile.replace('/','__')+'/blind/'
                 commandlist=[]
                 commandlist.append('cd '+os.getcwd())
                 if self.inputs:
@@ -120,7 +126,7 @@ class splitter:
                 ncpu=1
                 Export(WORKDIR,command,jobname,submit,ncpu)
                 ##--3) final
-                WORKDIR="WORKDIR_MKPLOT/"+cutfile+'/finalbkg/'
+                WORKDIR="WORKDIR_MKPLOT/"+cutfile.replace('/','__')+'__'+variablefile.replace('/','__')+'/finalbkg/'
                 commandlist=[]
                 commandlist.append('cd '+os.getcwd())
                 if self.inputs:
