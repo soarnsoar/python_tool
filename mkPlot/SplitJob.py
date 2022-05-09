@@ -28,7 +28,7 @@ class splitter:
         if self.samples:
             self.samplesopt="--samplesFile="+self.samples
         else:
-            self.samplesopt="--samplesFile=samples_'+self.Year+'_dummy.py"
+            self.samplesopt="--samplesFile=samples_"+self.Year+"_dummy.py"
 
         self.variablepy=variablepy
         self.cutfiles=[]
