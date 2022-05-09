@@ -16,11 +16,14 @@ class splitter:
         else:
             self.nuisanceopt=''
         self.inputs=inputs
-        if len(self.inputs.split(','))>1:self.multiopt="--isMultiInputs"
+        if len(self.inputs.split(','))>1:
+            self.multiopt="--isMultiInputs"
+        else:
+            self.multiopt=""
 
-        samples=self.samples
+        self.samples=samples
         if self.samples:
-            self.samplesopt="--samplesFile="+self.sample
+            self.samplesopt="--samplesFile="+self.samples
         else:
             self.samplesopt="--samplesFile=samples_'+self.Year+'_dummy.py"
         self.cutfiles=[]
