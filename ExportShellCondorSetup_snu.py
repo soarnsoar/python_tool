@@ -1,6 +1,8 @@
 #!/usr/bin/env python                                                                                                                                        
 import optparse
 import os
+#export CMS_PATH=/cvmfs/cms.cern.ch
+#source $CMS_PATH/cmsset_default.sh
 
 def Export(WORKDIR,command,jobname,submit,ncpu,memory=False,nretry=3):
     command='('+command+')'
@@ -10,6 +12,8 @@ def Export(WORKDIR,command,jobname,submit,ncpu,memory=False,nretry=3):
     
     lines.append("#!/bin/bash")
     #lines.append("export VO_CMS_SW_DIR="+os.getenv("VO_CMS_SW_DIR"))
+    lines.append("export CMS_PATH=/cvmfs/cms.cern.ch")
+    lines.append("source $CMS_PATH/cmsset_default.sh")
     lines.append("export SCRAM_ARCH="+os.getenv("SCRAM_ARCH"))
     #lines.append("source $VO_CMS_SW_DIR/cmsset_default.sh")
     lines.append("cd "+os.getenv("CMSSW_BASE"))
