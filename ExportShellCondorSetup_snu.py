@@ -102,6 +102,6 @@ if __name__ == '__main__':
    if options.memory:
        memory=int(options.memory)
    else:
-       memory=-1
+       memory=False
    Export(workdir,command,jobname,submit,ncpu,memory)
 
